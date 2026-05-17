@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,6 +27,7 @@
             inset: 0;
             z-index: 1;
             pointer-events: none;
+            background: #000; /* Ensures pure black is visible beneath layers */
         }
         .bg-canvas {
             position: absolute;
@@ -265,13 +264,11 @@
 </head>
 <body onload="initOS()">
 
-    <!-- VISUAL GRAPHICS ENGINE LAYERS -->
     <div id="canvas-container">
         <canvas id="poolCanvas" class="bg-canvas"></canvas>
         <canvas id="warpCanvas" class="bg-canvas"></canvas>
     </div>
 
-    <!-- HIGH-VISIBILITY BACKGROUND HUD OVERLAY (RIGHT ALIGNED) -->
     <div id="desktop-hud-container">
         <div class="chrono-background-hud" title="Solar Matrix Cycle">
             <svg class="chrono-svg" viewBox="0 0 40 40">
@@ -285,7 +282,6 @@
         </div>
     </div>
 
-    <!-- SECURITY CHECKPOINT -->
     <div id="gatekeeper">
         <div style="font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--accent); margin-bottom: 20px; letter-spacing: 4px;">WINKY_V1.1</div>
         <div class="vault-card">
@@ -297,10 +293,8 @@
         </div>
     </div>
 
-    <!-- MAIN OS DESKTOP -->
     <div id="desktop"></div>
 
-    <!-- CORE SYSTEM TASKBAR -->
     <div id="taskbar">
         <div class="start-btn" onclick="spawn('terminal')">☄</div>
         <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
@@ -597,9 +591,13 @@
                 document.getElementById('poolCanvas').classList.add('active');
                 const btn = document.getElementById('btn-eng-pool');
                 if(btn) btn.classList.add('active');
-            } else {
+            } else if (engineName === 'warp') {
                 document.getElementById('warpCanvas').classList.add('active');
                 const btn = document.getElementById('btn-eng-warp');
+                if(btn) btn.classList.add('active');
+            } else if (engineName === 'none') {
+                // Plain Black Background Mode: Keeps canvases hidden
+                const btn = document.getElementById('btn-eng-none');
                 if(btn) btn.classList.add('active');
             }
         }
@@ -818,6 +816,9 @@
                         </button>
                         <button id="btn-eng-warp" class="bg-engine-btn ${activeEngine==='warp'?'active':''}" onclick="switchBackgroundEngine('warp')">
                             <strong>Warp</strong><br><span style="opacity:0.6;font-size:0.65rem;">Bilinear viewport grav-pull matrix</span>
+                        </button>
+                        <button id="btn-eng-none" class="bg-engine-btn ${activeEngine==='none'?'active':''}" onclick="switchBackgroundEngine('none')">
+                            <strong>Void Black</strong><br><span style="opacity:0.6;font-size:0.65rem;">Plain black minimalistic matrix</span>
                         </button>
                     </div>
                     
