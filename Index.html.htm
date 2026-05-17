@@ -1,0 +1,907 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W&CO | WINKY_OS v1.1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #00d2ff;
+            --accent-glow: rgba(0, 210, 255, 0.4);
+            --bg-void: #020408;
+            --glass: rgba(10, 12, 18, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Comfortaa', cursive; cursor: default; }
+        
+        body { 
+            background: #000;
+            color: #fff; height: 100vh; overflow: hidden;
+        }
+
+        /* --- BACKGROUND CANVAS ARCHITECTURE --- */
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        .bg-canvas.active {
+            display: block;
+        }
+
+        /* --- DESKTOP CORE HUD BACKGROUND MATRIX --- */
+        #desktop-hud-container {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .chrono-background-hud {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(5, 8, 15, 0.25);
+            backdrop-filter: blur(4px);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            animation: hudPulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes hudPulse {
+            0% { transform: scale(1); opacity: 0.85; }
+            100% { transform: scale(1.02); opacity: 0.95; box-shadow: 0 25px 60px rgba(0, 210, 255, 0.05); }
+        }
+
+        .chrono-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .chrono-bg { fill: none; stroke: rgba(255, 255, 255, 0.04); stroke-width: 2.5px; }
+        .chrono-progress { 
+            fill: none; 
+            stroke: var(--accent); 
+            stroke-width: 3px; 
+            stroke-dasharray: 113; 
+            stroke-dashoffset: 113; 
+            stroke-linecap: round; 
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0px 0px 6px var(--accent-glow));
+        }
+        
+        .chrono-text { 
+            position: absolute; 
+            font-family: 'JetBrains Mono', monospace; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            line-height: 1.1;
+        }
+        .chrono-time { 
+            font-size: 2.2rem; 
+            font-weight: 700; 
+            color: #fff; 
+            text-shadow: 0 4px 15px rgba(0,0,0,0.9);
+            letter-spacing: -0.5px;
+        }
+        .chrono-day { 
+            font-size: 0.75rem; 
+            color: var(--accent); 
+            letter-spacing: 2px; 
+            margin-top: 4px; 
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* --- SECURITY CHECKPOINT --- */
+        #gatekeeper {
+            position: fixed; inset: 0; background: radial-gradient(circle at center, #0a101a 0%, #000 100%);
+            z-index: 500000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s ease;
+        }
+
+        .vault-card {
+            width: 350px; padding: 40px; background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border); border-radius: 30px; backdrop-filter: blur(20px);
+            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            animation: vaultFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes vaultFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .vault-input {
+            width: 100%; padding: 15px; margin: 20px 0; border-radius: 12px;
+            border: 1px solid var(--border); background: rgba(255,255,255,0.05);
+            color: var(--accent); font-family: 'JetBrains Mono'; text-align: center;
+            outline: none; transition: 0.3s; font-size: 1rem;
+            text-transform: uppercase;
+        }
+        .vault-input::placeholder { text-transform: none; }
+        .vault-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+        .vault-btn {
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: none; background: var(--accent); color: #000;
+            font-weight: 700; cursor: pointer; transition: 0.3s; letter-spacing: 1px;
+        }
+        .vault-btn:hover { transform: scale(1.03); box-shadow: 0 0 25px var(--accent-glow); }
+
+        /* --- DESKTOP LAYER --- */
+        #desktop {
+            position: absolute; inset: 0; padding: 30px;
+            display: grid; grid-template-columns: repeat(auto-fill, 110px);
+            grid-template-rows: repeat(auto-fill, 130px);
+            grid-auto-flow: column; gap: 15px; z-index: 3; opacity: 0; pointer-events: none; transition: 1s;
+        }
+
+        .node {
+            width: 100px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 20px; transition: 0.3s; text-align: center; pointer-events: all;
+        }
+        .node:hover { background: rgba(255,255,255,0.08); border: 1px solid var(--border); transform: translateY(-5px); }
+
+        .node-icon {
+            width: 58px; height: 58px; border-radius: 18px; background: rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 10px; border: 1px solid var(--border); font-size: 1.6rem;
+        }
+
+        /* --- WINDOWS --- */
+        .win {
+            position: absolute; min-width: 400px; min-height: 300px;
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 24px; backdrop-filter: blur(40px);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+            display: none; flex-direction: column; overflow: hidden; z-index: 100; pointer-events: all;
+        }
+        .win.maximized { inset: 10px !important; width: calc(100% - 20px) !important; height: calc(100% - 85px) !important; border-radius: 12px; }
+
+        .win-bar {
+            padding: 15px 20px; background: rgba(255,255,255,0.03);
+            display: flex; justify-content: space-between; align-items: center; cursor: move; border-bottom: 1px solid var(--border);
+        }
+        .win-ctrls { display: flex; gap: 10px; }
+        .win-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; }
+        .btn-close { background: #ff5f56; }
+        .btn-max { background: #27c93f; }
+        .btn-refresh { background: #ffbd2e; }
+
+        .win-body { flex-grow: 1; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; background: white; }
+
+        /* --- TASKBAR --- */
+        #taskbar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+            background: rgba(5, 8, 15, 0.95); backdrop-filter: blur(30px);
+            border-top: 1px solid var(--border); display: flex; align-items: center; padding: 0 15px; z-index: 9999; gap: 15px;
+            transform: translateY(100px); transition: 0.8s cubic-bezier(0,1,0,1); pointer-events: all;
+        }
+
+        .start-btn {
+            width: 45px; height: 45px; border-radius: 14px;
+            background: var(--accent); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.5rem; color: #000; box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .search-bar {
+            width: 200px; height: 40px; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 12px;
+            padding: 0 15px; color: #fff; font-size: 0.85rem; outline: none;
+        }
+        .search-bar:focus { border-color: var(--accent); }
+
+        .weather-widget {
+            display: flex; align-items: center; gap: 8px;
+            padding: 0 15px; height: 40px; border-radius: 12px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            font-size: 0.75rem; color: #fff;
+        }
+
+        .profile-trigger {
+            display: flex; align-items: center; gap: 12px; padding: 8px 15px; border-radius: 12px; margin-left: auto;
+        }
+        .pfp-circle { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--accent); background: #111; cursor: pointer; background-size: cover; background-position: center; }
+
+        .tray { font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.8rem; min-width: 90px; text-align: right; }
+        
+        .bg-scroll-area { 
+            display: flex; flex-direction: column; gap: 10px; 
+            max-height: 160px; overflow-y: auto; padding-right: 5px;
+        }
+        .bg-scroll-area::-webkit-scrollbar { width: 4px; }
+        .bg-scroll-area::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        
+        .bg-engine-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: #fff; padding: 12px; border-radius: 10px; text-align: left;
+            font-size: 0.75rem; cursor: pointer; transition: 0.2s;
+        }
+        .bg-engine-btn:hover, .bg-engine-btn.active {
+            background: rgba(0, 210, 255, 0.15); border-color: var(--accent);
+        }
+
+        .setting-toggle-row {
+            display: flex; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border); border-radius: 10px; padding: 4px; gap: 4px;
+        }
+        .setting-toggle-btn {
+            flex: 1; background: none; border: none; color: rgba(255,255,255,0.6);
+            padding: 8px; font-size: 0.7rem; border-radius: 6px; cursor: pointer;
+            font-family: 'JetBrains Mono'; font-weight: 700; transition: 0.2s;
+        }
+        .setting-toggle-btn.active {
+            background: var(--accent); color: #000; box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* --- CREDITS UI SPECIFIC --- */
+        .credits-container { padding: 30px; display: flex; flex-direction: column; gap: 25px; }
+        .credits-header { font-size: 0.7rem; opacity: 0.5; letter-spacing: 2px; font-family: 'JetBrains Mono'; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .creator-row { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 12px 20px; border-radius: 16px; transition: 0.3s; }
+        .creator-row:hover { background: rgba(255,255,255,0.05); border-color: var(--accent); transform: translateX(5px); }
+        .creator-pfp { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 0 10px var(--accent-glow); background-color: #111; }
+        .creator-name { font-size: 0.95rem; font-weight: 500; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body onload="initOS()">
+
+    <!-- VISUAL GRAPHICS ENGINE LAYERS -->
+    <div id="canvas-container">
+        <canvas id="poolCanvas" class="bg-canvas"></canvas>
+        <canvas id="warpCanvas" class="bg-canvas"></canvas>
+    </div>
+
+    <!-- HIGH-VISIBILITY BACKGROUND HUD OVERLAY (RIGHT ALIGNED) -->
+    <div id="desktop-hud-container">
+        <div class="chrono-background-hud" title="Solar Matrix Cycle">
+            <svg class="chrono-svg" viewBox="0 0 40 40">
+                <circle class="chrono-bg" cx="20" cy="20" r="18"></circle>
+                <circle id="chrono-progress-ring" class="chrono-progress" cx="20" cy="20" r="18"></circle>
+            </svg>
+            <div class="chrono-text">
+                <span id="chrono-time-display" class="chrono-time">00h</span>
+                <span id="chrono-day-display" class="chrono-day">---</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURITY CHECKPOINT -->
+    <div id="gatekeeper">
+        <div style="font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--accent); margin-bottom: 20px; letter-spacing: 4px;">WINKY_V1.1</div>
+        <div class="vault-card">
+            <div style="font-size: 2rem; margin-bottom: 10px;">☄</div>
+            <h2 style="font-size: 1.2rem; font-weight: 300;">IDENTITY REQUIRED</h2>
+            <input type="password" id="pass-input" class="vault-input" placeholder='ENTER "WINKY"' oninput="this.value = this.value.toUpperCase();" onkeydown="if(event.key==='Enter') authenticate()">
+            <button class="vault-btn" onclick="authenticate()">ENTER SESSION</button>
+            <div id="login-err" style="color: #ff5f56; font-size: 0.7rem; margin-top: 15px; display: none; font-family: 'JetBrains Mono';">KEY_REJECTED_ACCESS_DENIED</div>
+        </div>
+    </div>
+
+    <!-- MAIN OS DESKTOP -->
+    <div id="desktop"></div>
+
+    <!-- CORE SYSTEM TASKBAR -->
+    <div id="taskbar">
+        <div class="start-btn" onclick="spawn('terminal')">☄</div>
+        <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
+        
+        <div class="weather-widget" title="Current Local Conditions">
+            <span>☁️</span>
+            <span id="temp-display">72°F</span>
+            <span style="opacity: 0.4">|</span>
+            <span style="font-size: 0.6rem; letter-spacing: 1px;">WINKY_CO</span>
+        </div>
+
+        <div class="profile-trigger">
+            <div class="pfp-circle" id="pfp-accent" onclick="triggerPfpUpload()"></div>
+            <input type="file" id="pfp-file-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
+            <div style="font-size:0.7rem; font-weight:700;" id="user-display">winky_LINK</div>
+        </div>
+
+        <div class="tray" id="clock">00:00:00</div>
+    </div>
+
+    <script>
+        let zIdx = 1000;
+        let activeEngine = 'pool'; 
+        let isDev = false;
+        let activeUserKey = '';
+        let timeFormat = '24h';
+
+        let mouse = { x: -2000, y: -2000 };
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        const DEV_KEYS = {
+            'OANDB': 'winky_is_tuff'     
+        };
+
+        const DEFAULT_PFP = {
+            'winky_is_tuff': "https://cdn.discordapp.com/attachments/1464378795376115819/1505398226621173851/a18eaea1-2b2c-4c3e-9a66-479cd12a700e.jpg?ex=6a0a7ada&is=6a09295a&hm=82d59a1d83d393a3daa804c91f73c261f42b96e0eb111633ea1d38105220368d&"
+        };
+
+        const APP_REGISTRY = [
+            { type: 'core', name: 'terminal', label: 'Terminal', icon: '📡' },
+            { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' },
+            { type: 'core', name: 'credits', label: 'Credits', icon: '🎬' },
+            { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false },
+            { type: 'proxy', name: 'Shadow', label: 'Shadow', icon: '🌑', url: 'https://corecs.babypos.hk/', devOnly: false },
+            { type: 'proxy', name: 'Galaxy', label: 'Peta', icon: '🪐', url: 'https://cdn.jsdelivr.net/gh/PeteZah-G/PeteZahStaticDone@main/timmy-tuffnuckles.svg', devOnly: false },
+            { type: 'proxy', name: 'Truffled', label: 'Lucide', icon: '✳️', url: 'https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg#/', devOnly: false },
+            { type: 'proxy', name: 'Studyhub', label: 'Studyhub', icon: '😭', url: 'https://smart.vta-international.com/', devOnly: false },
+            { type: 'proxy', name: 'Axiom', label: 'Axiom', icon: '💎', url: 'http://learn.eleomedio-coach.hu/', devOnly: true },
+            { type: 'proxy', name: 'Xylora', label: 'Xylora', icon: '🌿', url: 'https://veessa.glenoriebakery.com.au/', devOnly: true },
+            { type: 'proxy', name: 'Infamous', label: 'Infamous', icon: '🔥', url: 'https://inf95948.about-anthony.com/', devOnly: true },
+            { type: 'proxy', name: 'Truffled', label: 'Froggy Arc', icon: '🐸', url: 'https://waguri.moorooduc.com/', devOnly: true }
+        ];
+
+        /* ========================================================================
+           BACKGROUND ENGINE 1: O&B LIVING POOL ENGINE (SUBMERGED)
+           ======================================================================== */
+        const poolCanvas = document.getElementById('poolCanvas');
+        const pCtx = poolCanvas.getContext('2d');
+        let pWidth, pHeight, cols, rows, buffer1, buffer2;
+        const res = 2; 
+        const damping = 0.98;
+        let poolTime = 0;
+        const pTextCanvas = document.createElement('canvas');
+        const ptCtx = pTextCanvas.getContext('2d');
+
+        function initPoolEngine() {
+            pWidth = window.innerWidth; pHeight = window.innerHeight;
+            poolCanvas.width = pWidth; poolCanvas.height = pHeight;
+            pTextCanvas.width = pWidth; pTextCanvas.height = pHeight;
+            cols = Math.floor(pWidth / res); rows = Math.floor(pHeight / res);
+            buffer1 = new Float32Array(cols * rows).fill(0);
+            buffer2 = new Float32Array(cols * rows).fill(0);
+            
+            ptCtx.fillStyle = '#003a4d'; ptCtx.fillRect(0, 0, pWidth, pHeight);
+            ptCtx.strokeStyle = 'rgba(255,255,255,0.08)'; ptCtx.lineWidth = 1;
+            for(let i=0; i<pWidth; i+=60) { ptCtx.strokeRect(i, 0, 0.5, pHeight); }
+            for(let i=0; i<pHeight; i+=60) { ptCtx.strokeRect(0, i, pWidth, 0.5); }
+            ptCtx.fillStyle = '#e0f7fa'; ptCtx.font = 'bold 220px serif';
+            ptCtx.textAlign = 'center'; ptCtx.textBaseline = 'middle';
+            ptCtx.shadowBlur = 30; ptCtx.shadowColor = 'rgba(0,255,255,0.6)';
+            ptCtx.fillText('W & CO', pWidth/2, pHeight/2);
+        }
+
+        function triggerPoolRipple(x, y, strength) {
+            let cx = Math.floor(x / res); let cy = Math.floor(y / res);
+            let radius = strength > 500 ? 8 : 3;
+            for(let i = -radius; i < radius; i++) {
+                for(let j = -radius; j < radius; j++) {
+                    let col = cx + i; let row = cy + j;
+                    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+                        buffer1[row * cols + col] = strength;
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if(activeEngine === 'pool') triggerPoolRipple(e.clientX, e.clientY, 120);
+        });
+        window.addEventListener('mousedown', (e) => {
+            if(activeEngine === 'pool') triggerPoolRipple(e.clientX, e.clientY, 1500);
+        });
+        setInterval(() => {
+            if(activeEngine === 'pool') triggerPoolRipple(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 50);
+        }, 1500);
+
+        function runPoolPhysics() {
+            poolTime += 0.03;
+            for(let k=0; k<3; k++) {
+                let rx = Math.floor(Math.random() * (cols - 2)) + 1;
+                let ry = Math.floor(Math.random() * (rows - 2)) + 1;
+                buffer1[ry * cols + rx] += Math.sin(poolTime * 0.4) * 2;
+            }
+            for (let j = 1; j < rows - 1; j++) {
+                let rowOffset = j * cols;
+                for (let i = 1; i < cols - 1; i++) {
+                    let idx = rowOffset + i;
+                    buffer2[idx] = ((buffer1[idx - 1] + buffer1[idx + 1] + buffer1[idx - cols] + buffer1[idx + cols]) * 0.5) - buffer2[idx];
+                    buffer2[idx] *= damping;
+                }
+            }
+            let imgData = ptCtx.getImageData(0, 0, pWidth, pHeight);
+            let outData = pCtx.createImageData(pWidth, pHeight);
+            let pixels = imgData.data; let outPixels = outData.data;
+
+            for (let y = 0; y < pHeight; y++) {
+                let r = (y / res) | 0; let rowOffset = r * cols;
+                for (let x = 0; x < pWidth; x++) {
+                    let c = (x / res) | 0;
+                    let rippleVal = buffer1[rowOffset + c];
+                    let dataIdx = (y * pWidth + x) << 2;
+                    let offset = (rippleVal * 0.8) | 0;
+                    let fetchX = x + offset; let fetchY = y + offset;
+
+                    if (fetchX < 0) fetchX = 0; else if (fetchX >= pWidth) fetchX = pWidth - 1;
+                    if (fetchY < 0) fetchY = 0; else if (fetchY >= pHeight) fetchY = pHeight - 1;
+
+                    let fetchIdx = (fetchY * pWidth + fetchX) << 2;
+                    let shimmer = rippleVal > 0 ? rippleVal * 0.6 : 0;
+
+                    outPixels[dataIdx] = pixels[fetchIdx] + shimmer;     
+                    outPixels[dataIdx+1] = pixels[fetchIdx+1] + shimmer + (shimmer > 0 ? 4 : 0); 
+                    outPixels[dataIdx+2] = pixels[fetchIdx+2] + shimmer + (shimmer > 0 ? 12 : 0); 
+                    outPixels[dataIdx+3] = 255; 
+                }
+            }
+            pCtx.putImageData(outData, 0, 0);
+            let temp = buffer1; buffer1 = buffer2; buffer2 = temp;
+        }
+
+        /* ========================================================================
+            BACKGROUND ENGINE 2: SINGULARITY LIQUID SMOOTH WARP ENGINE (WARP)
+            ======================================================================== */
+        const warpCanvas = document.getElementById('warpCanvas');
+        const wCtx = warpCanvas.getContext('2d', { alpha: false, desynchronized: true });
+        let wWidth, wHeight, wSize;
+        let holePos = { x: -2000, y: -2000 };
+        let currentInflation = 0; 
+        const voidRadius = 115;      
+        const boxWidth = 650;        
+        const boxHeight = 180;       
+        let sourceBuffer, outputData, outputPixels;
+        const wTextCanvas = document.createElement('canvas');
+        const wtCtx = wTextCanvas.getContext('2d', { alpha: false });
+
+        function initWarpEngine() {
+            wWidth = window.innerWidth; wHeight = window.innerHeight;
+            wSize = wWidth * wHeight;
+            warpCanvas.width = wWidth; warpCanvas.height = wHeight;
+            wTextCanvas.width = wWidth; wTextCanvas.height = wHeight;
+            
+            wtCtx.fillStyle = '#050505'; wtCtx.fillRect(0, 0, wWidth, wHeight);
+            for (let i = 0; i < 400; i++) {
+                wtCtx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.8})`;
+                wtCtx.beginPath(); wtCtx.arc(Math.random() * wWidth, Math.random() * wHeight, Math.random() * 1.2, 0, Math.PI * 2); wtCtx.fill();
+            }
+            wtCtx.fillStyle = '#ffffff'; wtCtx.font = 'bold 220px serif';
+            wtCtx.textAlign = 'center'; wtCtx.textBaseline = 'middle';
+            wtCtx.fillText('W & CO', wWidth / 2, wHeight / 2);
+
+            const tempImgData = wtCtx.getImageData(0, 0, wWidth, wHeight);
+            sourceBuffer = new Uint32Array(tempImgData.data.buffer);
+            outputData = wCtx.createImageData(wWidth, wHeight);
+            outputPixels = new Uint32Array(outputData.data.buffer);
+        }
+
+        function runWarpPhysics() {
+            const centerX = wWidth / 2; const centerY = wHeight / 2;
+            const isInside = Math.abs(mouse.x - centerX) < boxWidth / 2 && Math.abs(mouse.y - centerY) < boxHeight / 2;
+            
+            if (holePos.x < -1000 && mouse.x > -1000) { holePos.x = mouse.x; holePos.y = mouse.y; }
+
+            const targetInflation = isInside ? 1 : 0;
+            currentInflation += (targetInflation - currentInflation) * (isInside ? 0.08 : 0.15);
+
+            const followSpeed = isInside ? 0.12 : (currentInflation > 0.01 ? 0.25 : 1.0);
+            holePos.x += (mouse.x - holePos.x) * followSpeed;
+            holePos.y += (mouse.y - holePos.y) * followSpeed;
+
+            if (currentInflation < 0.0001 && !isInside) {
+                wCtx.drawImage(wTextCanvas, 0, 0);
+                return;
+            }
+
+            const iSq = currentInflation * currentInflation;
+            const lineLife = isInside ? Math.max(0, 1 - currentInflation * 1.4) : 0;
+            const vScale = Math.max(iSq * iSq, 0.0001);
+            const vRadius = voidRadius * currentInflation;
+
+            for (let i = 0; i < wSize; i++) {
+                const x = i % wWidth; const y = (i / wWidth) | 0;
+                const dx = x - holePos.x; const dy = y - holePos.y;
+                const distCheck = Math.sqrt(dx * dx + (dy / vScale) * (dy / vScale));
+                const isLine = isInside && lineLife > 0 && Math.abs(dy) < (1.2 + lineLife * 2) && Math.abs(dx) < (wWidth * 0.35 * lineLife);
+
+                if (distCheck < vRadius || isLine) {
+                    outputPixels[i] = 0xFF050505; continue;
+                }
+
+                const rawDist = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                const pull = Math.exp(-(Math.abs(dx) / 450) - (Math.abs(dy) / 30)) * currentInflation;
+                const lensWarp = (voidRadius * 2.2) / Math.max(rawDist, 15) * currentInflation;
+
+                const floatFx = x - Math.cos(angle) * (lensWarp * 45) - (dx * 0.3 * pull * currentInflation);
+                const floatFy = y - Math.sin(angle) * (lensWarp * 45) + ((dy > 0 ? 1 : -1) * (20 * lineLife) * pull);
+
+                const fx = (floatFx + 0.5) | 0; const fy = (floatFy + 0.5) | 0;
+                
+                if (fx >= 0 && fx < wWidth && fy >= 0 && fy < wHeight) {
+                    outputPixels[i] = sourceBuffer[fy * wWidth + fx];
+                } else {
+                    outputPixels[i] = 0xFF000000;
+                }
+            }
+            wCtx.putImageData(outputData, 0, 0);
+        }
+
+        /* ========================================================================
+            CORE ENGINE LOOP RUNNER, MATRIX CHRONOMETER & OS LOGIC
+            ======================================================================== */
+        function updateSystemTimeMetrics() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            if (timeFormat === '12h') {
+                let displayHours = hours % 12;
+                displayHours = displayHours ? displayHours : 12; 
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                document.getElementById('clock').innerText = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
+            } else {
+                document.getElementById('clock').innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            const totalPassedSeconds = (hours * 3600) + (minutes * 60) + seconds;
+            const totalDaySeconds = 86400; 
+            const dayCompletionRatio = totalPassedSeconds / totalDaySeconds;
+            
+            const circumference = 113.097;
+            const offset = circumference - (dayCompletionRatio * circumference);
+            
+            document.getElementById('chrono-progress-ring').style.strokeDashoffset = offset;
+            
+            if (timeFormat === '12h') {
+                let hudHours = hours % 12;
+                hudHours = hudHours ? hudHours : 12;
+                const marker = hours >= 12 ? 'p' : 'a';
+                document.getElementById('chrono-time-display').innerText = `${hudHours.toString().padStart(2, '0')}${marker}`;
+            } else {
+                document.getElementById('chrono-time-display').innerText = `${hours.toString().padStart(2, '0')}h`;
+            }
+            
+            const daysMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            document.getElementById('chrono-day-display').innerText = daysMap[now.getDay()];
+        }
+
+        function setTimeFormat(format) {
+            timeFormat = format;
+            localStorage.setItem('aura_time_format', format);
+            
+            document.querySelectorAll('.setting-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-format') === format) btn.classList.add('active');
+            });
+            
+            updateSystemTimeMetrics();
+        }
+
+        function switchBackgroundEngine(engineName) {
+            activeEngine = engineName;
+            localStorage.setItem('aura_engine', engineName);
+
+            document.querySelectorAll('.bg-canvas').forEach(canv => canv.classList.remove('active'));
+            document.querySelectorAll('.bg-engine-btn').forEach(btn => btn.classList.remove('active'));
+
+            if(engineName === 'pool') {
+                document.getElementById('poolCanvas').classList.add('active');
+                const btn = document.getElementById('btn-eng-pool');
+                if(btn) btn.classList.add('active');
+            } else {
+                document.getElementById('warpCanvas').classList.add('active');
+                const btn = document.getElementById('btn-eng-warp');
+                if(btn) btn.classList.add('active');
+            }
+        }
+
+        function animateOS() {
+            if (activeEngine === 'pool') {
+                runPoolPhysics();
+            } else if (activeEngine === 'warp') {
+                runWarpPhysics();
+            }
+            requestAnimationFrame(animateOS);
+        }
+
+        function initOS() {
+            initPoolEngine();
+            initWarpEngine();
+
+            let savedEngine = localStorage.getItem('aura_engine');
+            if (!savedEngine || savedEngine === "null" || savedEngine === "undefined") {
+                savedEngine = 'pool';
+            }
+            
+            const savedColor = localStorage.getItem('aura_accent') || '#00d2ff';
+            timeFormat = localStorage.getItem('aura_time_format') || '24h';
+            
+            switchBackgroundEngine(savedEngine);
+            setAccent(savedColor);
+
+            updateSystemTimeMetrics();
+            setInterval(updateSystemTimeMetrics, 1000);
+
+            requestAnimationFrame(animateOS);
+        }
+
+        window.addEventListener('resize', () => {
+            initPoolEngine();
+            initWarpEngine();
+        });
+
+        function getDevAvatarUrl(key) {
+            const saved = localStorage.getItem(`aura_avatar_${key}`);
+            if (saved) return saved;
+            return DEFAULT_PFP[key] || '';
+        }
+
+        function generateDesktopEnvironment() {
+            const desktop = document.getElementById('desktop');
+            desktop.innerHTML = ''; 
+
+            APP_REGISTRY.forEach(app => {
+                if (app.devOnly && !isDev) return;
+
+                const node = document.createElement('div');
+                node.className = 'node';
+                
+                if (app.type === 'core') {
+                    node.setAttribute('ondblclick', `spawn('${app.name}')`);
+                } else {
+                    node.setAttribute('ondblclick', `spawnProxy('${app.name}', '${app.url}')`);
+                }
+
+                node.innerHTML = `<div class="node-icon">${app.icon}</div><div style="font-size:0.7rem;">${app.label}</div>`;
+                desktop.appendChild(node);
+            });
+        }
+
+        function authenticate() {
+            const rawInput = document.getElementById('pass-input').value;
+            const inputVal = rawInput.toUpperCase().trim();
+            
+            if (DEV_KEYS[inputVal]) {
+                activeUserKey = DEV_KEYS[inputVal]; 
+                isDev = true;
+                document.getElementById('user-display').innerText = activeUserKey;
+                document.getElementById('pfp-accent').style.cursor = 'pointer';
+                document.getElementById('pfp-accent').style.backgroundImage = `url('${getDevAvatarUrl(activeUserKey)}')`;
+                
+                generateDesktopEnvironment();
+                unlockOS();
+            } else if (inputVal === 'WINKY') {
+                isDev = false;
+                
+                let winkyId = sessionStorage.getItem('aura_winky_id');
+                if (!winkyId) {
+                    let nextNum = parseInt(localStorage.getItem('aura_next_winky_num') || '1');
+                    if(nextNum > 13) nextNum = 1; 
+                    winkyId = `winky_${nextNum}`;
+                    sessionStorage.setItem('aura_winky_id', winkyId);
+                    localStorage.setItem('aura_next_winky_num', nextNum + 1);
+                }
+                
+                activeUserKey = winkyId;
+                document.getElementById('user-display').innerText = winkyId.toUpperCase();
+                document.getElementById('pfp-accent').style.cursor = 'default';
+                document.getElementById('pfp-accent').style.backgroundImage = `none`;
+                
+                generateDesktopEnvironment();
+                unlockOS();
+            } else {
+                const err = document.getElementById('login-err');
+                err.style.display = 'block';
+                setTimeout(() => err.style.display = 'none', 2000);
+            }
+        }
+
+        function unlockOS() {
+            document.getElementById('gatekeeper').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('gatekeeper').style.display = 'none';
+                document.getElementById('desktop').style.opacity = '1';
+                document.getElementById('desktop').style.pointerEvents = 'all';
+                document.getElementById('taskbar').style.transform = 'translateY(0)';
+            }, 1000);
+        }
+
+        function triggerPfpUpload() {
+            if (isDev) {
+                document.getElementById('pfp-file-input').click();
+            } else {
+                logTerminalError('WRITE_ACCESS_DENIED: winky_ACCOUNTS_CANNOT_ALTER_AVATAR');
+            }
+        }
+
+        function logTerminalError(msg) {
+            const termWin = document.getElementById('win-terminal');
+            if (termWin) {
+                const body = termWin.querySelector('.win-terminal-body');
+                if (body) {
+                    body.innerHTML += `<br><span style="color:#ff5f56;">[ERR] ${msg}</span>`;
+                    body.scrollTop = body.scrollHeight;
+                }
+            } else {
+                alert(`[ERR] ${msg}`);
+            }
+        }
+
+        function uploadAvatar(input) {
+            if (isDev && input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgBase64 = e.target.result;
+                    
+                    // Unified taskbar update
+                    document.getElementById('pfp-accent').style.backgroundImage = `url(${imgBase64})`;
+                    
+                    // Unified localStorage saving system
+                    localStorage.setItem(`aura_avatar_${activeUserKey}`, imgBase64);
+                    
+                    // Dynamic live syncing for open panels
+                    const b2PfpEl = document.getElementById('credits-pfp-b2');
+                    const c3PfpEl = document.getElementById('credits-pfp-c3');
+                    if (activeUserKey === 'Hiring' && b2PfpEl) b2PfpEl.style.backgroundImage = `url(${imgBase64})`;
+                    if (activeUserKey === 'winky_is_tuff' && c3PfpEl) c3PfpEl.style.backgroundImage = `url(${imgBase64})`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function refreshWin(id) {
+            const win = document.getElementById(id);
+            if (win) {
+                const iframe = win.querySelector('iframe');
+                if (iframe) {
+                    iframe.src = iframe.src;
+                }
+            }
+        }
+
+        function spawnProxy(name, url) {
+            const lowerName = name.toLowerCase();
+            const id = 'win-' + lowerName;
+            if (document.getElementById(id)) { focusWin(id); return; }
+            const win = document.createElement('div');
+            win.id = id; win.className = 'win';
+            win.style.display = 'flex';
+            win.style.width = '850px'; win.style.height = '550px';
+            win.style.left = '100px'; win.style.top = '80px';
+            win.style.zIndex = ++zIdx;
+            win.innerHTML = `
+                <div class="win-bar" onmousedown="dragStart(event, '${id}')">
+                    <span style="font-size:0.7rem; font-weight:700; letter-spacing:1px;">UPLINK::${name.toUpperCase()}</span>
+                    <div class="win-ctrls">
+                        <button class="win-btn btn-max" onclick="maxWin('${id}')"></button>
+                        <button class="win-btn btn-refresh" onclick="refreshWin('${id}')"></button>
+                        <button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>
+                    </div>
+                </div>
+                <div class="win-body"><iframe src="${url}"></iframe></div>
+            `;
+            document.body.appendChild(win);
+        }
+
+        function spawn(app) {
+            const id = 'win-' + app;
+            if (document.getElementById(id)) { focusWin(id); return; }
+            const win = document.createElement('div');
+            win.id = id; win.className = 'win';
+            win.style.display = 'flex';
+            win.style.width = '420px'; win.style.height = '425px';
+            win.style.left = '200px'; win.style.top = '150px';
+            win.style.zIndex = ++zIdx;
+
+            let body = '';
+            let ctrlButtons = '';
+            
+            if (app === 'terminal') {
+                ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
+                body = `<div class="win-terminal-body" style="padding:20px; font-family:'JetBrains Mono'; color:var(--accent); font-size:0.8rem; height:100%; overflow-y:auto;">[SYS] CORE_V17.3_LOADED<br>> VISUAL ENGINES: INTERLINKED MAP<br>> SYSTEM: FLUID SMOOTH ENGINE ACTIVE<br><br>> _</div>`;
+            } else if (app === 'settings') {
+                ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
+                body = `<div style="padding:22px;">
+                    <p style="font-size:0.65rem; opacity:0.5; margin-bottom:8px; letter-spacing:1px;">CORE ENGINE MATRIX</p>
+                    <div class="bg-scroll-area">
+                        <button id="btn-eng-pool" class="bg-engine-btn ${activeEngine==='pool'?'active':''}" onclick="switchBackgroundEngine('pool')">
+                            <strong>Submerged</strong><br><span style="opacity:0.6;font-size:0.65rem;">Ultra-fidelity discrete water simulation</span>
+                        </button>
+                        <button id="btn-eng-warp" class="bg-engine-btn ${activeEngine==='warp'?'active':''}" onclick="switchBackgroundEngine('warp')">
+                            <strong>Warp</strong><br><span style="opacity:0.6;font-size:0.65rem;">Bilinear viewport grav-pull matrix</span>
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top:16px;">
+                        <p style="font-size:0.65rem; opacity:0.5; margin-bottom:8px; letter-spacing:1px;">TIME_FORMAT_MATRIX</p>
+                        <div class="setting-toggle-row">
+                            <button class="setting-toggle-btn ${timeFormat==='24h'?'active':''}" data-format="24h" onclick="setTimeFormat('24h')">MILITARY (24H)</button>
+                            <button class="setting-toggle-btn ${timeFormat==='12h'?'active':''}" data-format="12h" onclick="setTimeFormat('12h')">STANDARD (12H)</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px;">
+                        <label style="font-size:0.65rem; opacity:0.5; letter-spacing:1px;">ACCENT_SYNC</label><br>
+                        <input type="color" value="${localStorage.getItem('aura_accent') || '#00d2ff'}" onchange="setAccent(this.value)" style="width:100%; height:28px; background:none; border:none; cursor:pointer; margin-top:5px;">
+                    </div>
+                </div>`;
+            } else if (app === 'credits') {
+                ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
+                
+                const omieAvatar = getDevAvatarUrl('');
+                const balisticAvatar = getDevAvatarUrl('winky_is_tuff');
+                
+                body = `<div class="credits-container">
+                    <div class="credits-header">Devs / Creators</div>
+                    <div class="creator-row">
+                        <div id="credits-pfp-b2" class="creator-pfp" style="background-image: url('${omieAvatar}');"></div>
+                        <div class="creator-name">HIRING</div>
+                    </div>
+                    <div class="creator-row">
+                        <div id="credits-pfp-c3" class="creator-pfp" style="background-image: url('${balisticAvatar}');"></div>
+                        <div class="creator-name">winky_is_tuff</div>
+                    </div>
+                </div>`;
+            } else {
+                ctrlButtons = `
+                    <button class="win-btn btn-refresh" onclick="refreshWin('${id}')"></button>
+                    <button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>
+                `;
+            }
+
+            win.innerHTML = 
+                `<div class="win-bar" onmousedown="dragStart(event, '${id}')">
+                    <span style="font-size:0.7rem; font-weight:700;">${app.toUpperCase()}</span>
+                    <div class="win-ctrls">${ctrlButtons}</div>
+                </div>
+                <div class="win-body">${body}</div>`
+            ;
+            document.body.appendChild(win);
+        }
+
+        function setAccent(color) {
+            document.documentElement.style.setProperty('--accent', color);
+            localStorage.setItem('aura_accent', color);
+        }
+
+        function dragStart(e, id) {
+            const el = document.getElementById(id);
+            focusWin(id);
+            if (el.classList.contains('maximized')) return;
+            let sx = e.clientX - el.offsetLeft;
+            let sy = e.clientY - el.offsetTop;
+            const move = (ev) => { el.style.left = (ev.clientX - sx) + 'px'; el.style.top = (ev.clientY - sy) + 'px'; };
+            const stop = () => window.removeEventListener('mousemove', move);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', stop);
+        }
+
+        function maxWin(id) { document.getElementById(id).classList.toggle('maximized'); }
+        function focusWin(id) { document.getElementById(id).style.zIndex = ++zIdx; }
+
+        function filterApps() {
+            let q = document.querySelector('.search-bar').value.toLowerCase();
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.display = node.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
