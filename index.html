@@ -27,7 +27,6 @@
             inset: 0;
             z-index: 1;
             pointer-events: none;
-            background: #000; /* Ensures pure black is visible beneath layers */
         }
         .bg-canvas {
             position: absolute;
@@ -287,7 +286,7 @@
         <div class="vault-card">
             <div style="font-size: 2rem; margin-bottom: 10px;">☄</div>
             <h2 style="font-size: 1.2rem; font-weight: 300;">IDENTITY REQUIRED</h2>
-            <input type="password" id="pass-input" class="vault-input" placeholder='ENTER "WINKY"' oninput="this.value = this.value.toUpperCase();" onkeydown="if(event.key==='Enter') authenticate()">
+            <input type="password" id="pass-input" class="vault-input" placeholder='ENTER IDENTITY' oninput="this.value = this.value.toUpperCase();" onkeydown="if(event.key==='Enter') authenticate()">
             <button class="vault-btn" onclick="authenticate()">ENTER SESSION</button>
             <div id="login-err" style="color: #ff5f56; font-size: 0.7rem; margin-top: 15px; display: none; font-family: 'JetBrains Mono';">KEY_REJECTED_ACCESS_DENIED</div>
         </div>
@@ -591,13 +590,9 @@
                 document.getElementById('poolCanvas').classList.add('active');
                 const btn = document.getElementById('btn-eng-pool');
                 if(btn) btn.classList.add('active');
-            } else if (engineName === 'warp') {
+            } else {
                 document.getElementById('warpCanvas').classList.add('active');
                 const btn = document.getElementById('btn-eng-warp');
-                if(btn) btn.classList.add('active');
-            } else if (engineName === 'none') {
-                // Plain Black Background Mode: Keeps canvases hidden
-                const btn = document.getElementById('btn-eng-none');
                 if(btn) btn.classList.add('active');
             }
         }
@@ -674,6 +669,16 @@
                 document.getElementById('user-display').innerText = activeUserKey;
                 document.getElementById('pfp-accent').style.cursor = 'pointer';
                 document.getElementById('pfp-accent').style.backgroundImage = `url('${getDevAvatarUrl(activeUserKey)}')`;
+                
+                generateDesktopEnvironment();
+                unlockOS();
+            } else if (inputVal === 'WINKYGAMER098') {
+                // Custom override for your dynamic username string
+                isDev = false;
+                activeUserKey = 'winkygamer098';
+                document.getElementById('user-display').innerText = 'WINKYGAMER098';
+                document.getElementById('pfp-accent').style.cursor = 'default';
+                document.getElementById('pfp-accent').style.backgroundImage = `none`;
                 
                 generateDesktopEnvironment();
                 unlockOS();
@@ -816,9 +821,6 @@
                         </button>
                         <button id="btn-eng-warp" class="bg-engine-btn ${activeEngine==='warp'?'active':''}" onclick="switchBackgroundEngine('warp')">
                             <strong>Warp</strong><br><span style="opacity:0.6;font-size:0.65rem;">Bilinear viewport grav-pull matrix</span>
-                        </button>
-                        <button id="btn-eng-none" class="bg-engine-btn ${activeEngine==='none'?'active':''}" onclick="switchBackgroundEngine('none')">
-                            <strong>Void Black</strong><br><span style="opacity:0.6;font-size:0.65rem;">Plain black minimalistic matrix</span>
                         </button>
                     </div>
                     
