@@ -263,13 +263,11 @@
 </head>
 <body onload="initOS()">
 
-    <!-- VISUAL GRAPHICS ENGINE LAYERS -->
     <div id="canvas-container">
         <canvas id="poolCanvas" class="bg-canvas"></canvas>
         <canvas id="warpCanvas" class="bg-canvas"></canvas>
     </div>
 
-    <!-- HIGH-VISIBILITY BACKGROUND HUD OVERLAY (RIGHT ALIGNED) -->
     <div id="desktop-hud-container">
         <div class="chrono-background-hud" title="Solar Matrix Cycle">
             <svg class="chrono-svg" viewBox="0 0 40 40">
@@ -283,7 +281,6 @@
         </div>
     </div>
 
-    <!-- SECURITY CHECKPOINT -->
     <div id="gatekeeper">
         <div style="font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--accent); margin-bottom: 20px; letter-spacing: 4px;">WINKY_V1.1</div>
         <div class="vault-card">
@@ -295,12 +292,10 @@
         </div>
     </div>
 
-    <!-- MAIN OS DESKTOP -->
     <div id="desktop"></div>
 
-    <!-- CORE SYSTEM TASKBAR -->
     <div id="taskbar">
-        <div class="start-btn" onclick="spawn('terminal')">☄</div>
+        <div class="start-btn" onclick="spawnProxy('hiring', 'https://forms.gle/P2ofT1AEgTiukB4TA')">☄</div>
         <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
         
         <div class="weather-widget" title="Current Local Conditions">
@@ -341,7 +336,7 @@
         };
 
         const APP_REGISTRY = [
-            { type: 'core', name: 'terminal', label: 'Terminal', icon: '📡' },
+            { type: 'proxy', name: 'hiring', label: 'Hiring', icon: '📡', url: 'https://forms.gle/P2ofT1AEgTiukB4TA', devOnly: false },
             { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' },
             { type: 'core', name: 'credits', label: 'Credits', icon: '🎬' },
             { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false },
@@ -675,10 +670,9 @@
                 document.getElementById('pfp-accent').style.cursor = 'pointer';
                 document.getElementById('pfp-accent').style.backgroundImage = `url('${getDevAvatarUrl(activeUserKey)}')`;
 
-                  generateDesktopEnvironment();
+                generateDesktopEnvironment();
                 unlockOS();
             } else if (inputVal === 'WINKYGAMER098') {
-                // Custom override for your dynamic username string
                 isDev = true;
                 activeUserKey = 'winkygamer098';
                 document.getElementById('user-display').innerText = 'WINKYGAMER098';
@@ -727,20 +721,7 @@
             if (isDev) {
                 document.getElementById('pfp-file-input').click();
             } else {
-                logTerminalError('WRITE_ACCESS_DENIED: winky_ACCOUNTS_CANNOT_ALTER_AVATAR');
-            }
-        }
-
-        function logTerminalError(msg) {
-            const termWin = document.getElementById('win-terminal');
-            if (termWin) {
-                const body = termWin.querySelector('.win-terminal-body');
-                if (body) {
-                    body.innerHTML += `<br><span style="color:#ff5f56;">[ERR] ${msg}</span>`;
-                    body.scrollTop = body.scrollHeight;
-                }
-            } else {
-                alert(`[ERR] ${msg}`);
+                alert('WRITE_ACCESS_DENIED: winky_ACCOUNTS_CANNOT_ALTER_AVATAR');
             }
         }
 
@@ -750,13 +731,9 @@
                 reader.onload = function(e) {
                     const imgBase64 = e.target.result;
                     
-                    // Unified taskbar update
                     document.getElementById('pfp-accent').style.backgroundImage = `url(${imgBase64})`;
-                    
-                    // Unified localStorage saving system
                     localStorage.setItem(`aura_avatar_${activeUserKey}`, imgBase64);
                     
-                    // Dynamic live syncing for open panels
                     const b2PfpEl = document.getElementById('credits-pfp-b2');
                     const c3PfpEl = document.getElementById('credits-pfp-c3');
                     if (activeUserKey === 'Hiring' && b2PfpEl) b2PfpEl.style.backgroundImage = `url(${imgBase64})`;
@@ -813,10 +790,7 @@
             let body = '';
             let ctrlButtons = '';
             
-            if (app === 'terminal') {
-                ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
-                body = `<div class="win-terminal-body" style="padding:20px; font-family:'JetBrains Mono'; color:var(--accent); font-size:0.8rem; height:100%; overflow-y:auto;">[SYS] CORE_V17.3_LOADED<br>> VISUAL ENGINES: INTERLINKED MAP<br>> SYSTEM: FLUID SMOOTH ENGINE ACTIVE<br><br>> _</div>`;
-            } else if (app === 'settings') {
+            if (app === 'settings') {
                 ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
                 body = `<div style="padding:22px;">
                     <p style="font-size:0.65rem; opacity:0.5; margin-bottom:8px; letter-spacing:1px;">CORE ENGINE MATRIX</p>
