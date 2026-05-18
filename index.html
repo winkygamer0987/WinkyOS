@@ -14,11 +14,19 @@
             --border: rgba(255, 255, 255, 0.08);
         }
 
+        /* Restored default cursor behavior for selectable areas to allow copy/paste */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Comfortaa', cursive; cursor: default; }
         
         body { 
             background: #000;
             color: #fff; height: 100vh; overflow: hidden;
+        }
+
+        /* Allows selection and standard text interactions inside windows and inputs */
+        input, textarea, .win-body, .chrono-text, .creator-name {
+            cursor: text;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         /* --- BACKGROUND CANVAS ARCHITECTURE --- */
@@ -295,7 +303,7 @@
     <div id="desktop"></div>
 
     <div id="taskbar">
-        <div class="start-btn" onclick="spawnProxy('hiring', 'https://github.com/winkygamer0987/WinkyOS')">☄</div>
+        <div class="start-btn" onclick="spawnProxy('WinkyOS', 'https://winkygamer0987.github.io/WinkyOS/')">☄</div>
         <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
         
         <div class="weather-widget" title="Current Local Conditions">
