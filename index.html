@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -263,11 +265,13 @@
 </head>
 <body onload="initOS()">
 
+    <!-- VISUAL GRAPHICS ENGINE LAYERS -->
     <div id="canvas-container">
         <canvas id="poolCanvas" class="bg-canvas"></canvas>
         <canvas id="warpCanvas" class="bg-canvas"></canvas>
     </div>
 
+    <!-- HIGH-VISIBILITY BACKGROUND HUD OVERLAY (RIGHT ALIGNED) -->
     <div id="desktop-hud-container">
         <div class="chrono-background-hud" title="Solar Matrix Cycle">
             <svg class="chrono-svg" viewBox="0 0 40 40">
@@ -281,19 +285,22 @@
         </div>
     </div>
 
+    <!-- SECURITY CHECKPOINT -->
     <div id="gatekeeper">
         <div style="font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--accent); margin-bottom: 20px; letter-spacing: 4px;">WINKY_V1.1</div>
         <div class="vault-card">
             <div style="font-size: 2rem; margin-bottom: 10px;">☄</div>
             <h2 style="font-size: 1.2rem; font-weight: 300;">IDENTITY REQUIRED</h2>
-            <input type="password" id="pass-input" class="vault-input" placeholder='ENTER IDENTITY' oninput="this.value = this.value.toUpperCase();" onkeydown="if(event.key==='Enter') authenticate()">
+            <input type="password" id="pass-input" class="vault-input" placeholder='ENTER "WINKY"' oninput="this.value = this.value.toUpperCase();" onkeydown="if(event.key==='Enter') authenticate()">
             <button class="vault-btn" onclick="authenticate()">ENTER SESSION</button>
             <div id="login-err" style="color: #ff5f56; font-size: 0.7rem; margin-top: 15px; display: none; font-family: 'JetBrains Mono';">KEY_REJECTED_ACCESS_DENIED</div>
         </div>
     </div>
 
+    <!-- MAIN OS DESKTOP -->
     <div id="desktop"></div>
 
+    <!-- CORE SYSTEM TASKBAR -->
     <div id="taskbar">
         <div class="start-btn" onclick="spawn('terminal')">☄</div>
         <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
@@ -328,19 +335,18 @@
         });
 
         const DEV_KEYS = {
-            'OANDB': 'winkygamer098'     
+            'OANDB': 'winky_is_tuff'     
         };
 
         const DEFAULT_PFP = {
-            'winkygamer098': "https://cdn.discordapp.com/attachments/1464378795376115819/1505398226621173851/a18eaea1-2b2c-4c3e-9a66-479cd12a700e.jpg?ex=6a0a7ada&is=6a09295a&hm=82d59a1d83d393a3daa804c91f73c261f42b96e0eb111633ea1d38105220368d&"
+            'winky_is_tuff': "https://cdn.discordapp.com/attachments/1464378795376115819/1505398226621173851/a18eaea1-2b2c-4c3e-9a66-479cd12a700e.jpg?ex=6a0a7ada&is=6a09295a&hm=82d59a1d83d393a3daa804c91f73c261f42b96e0eb111633ea1d38105220368d&"
         };
 
         const APP_REGISTRY = [
             { type: 'core', name: 'terminal', label: 'Terminal', icon: '📡' },
             { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' },
             { type: 'core', name: 'credits', label: 'Credits', icon: '🎬' },
-            { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false }
-            { type: 'proxy', name: 'hiring', label: 'Hiring', icon: '💼', url: 'https://forms.gle/j3meK8FaMZAnFyzZ7', devOnly: false },
+            { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false },
         ];
 
         /* ========================================================================
@@ -670,12 +676,12 @@
                 document.getElementById('user-display').innerText = activeUserKey;
                 document.getElementById('pfp-accent').style.cursor = 'pointer';
                 document.getElementById('pfp-accent').style.backgroundImage = `url('${getDevAvatarUrl(activeUserKey)}')`;
-                
-                generateDesktopEnvironment();
+
+                  generateDesktopEnvironment();
                 unlockOS();
             } else if (inputVal === 'WINKYGAMER098') {
                 // Custom override for your dynamic username string
-                isDev = false;
+                isDev = true;
                 activeUserKey = 'winkygamer098';
                 document.getElementById('user-display').innerText = 'WINKYGAMER098';
                 document.getElementById('pfp-accent').style.cursor = 'default';
@@ -684,8 +690,8 @@
                 generateDesktopEnvironment();
                 unlockOS();
             } else if (inputVal === 'WINKY') {
-                isDev = false;
-                
+                isDev = false;              
+            
                 let winkyId = sessionStorage.getItem('aura_winky_id');
                 if (!winkyId) {
                     let nextNum = parseInt(localStorage.getItem('aura_next_winky_num') || '1');
@@ -756,7 +762,7 @@
                     const b2PfpEl = document.getElementById('credits-pfp-b2');
                     const c3PfpEl = document.getElementById('credits-pfp-c3');
                     if (activeUserKey === 'Hiring' && b2PfpEl) b2PfpEl.style.backgroundImage = `url(${imgBase64})`;
-                    if (activeUserKey === 'winkygamer098' && c3PfpEl) c3PfpEl.style.backgroundImage = `url(${imgBase64})`;
+                    if (activeUserKey === 'winky_is_tuff' && c3PfpEl) c3PfpEl.style.backgroundImage = `url(${imgBase64})`;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -842,7 +848,7 @@
                 ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
                 
                 const omieAvatar = getDevAvatarUrl('');
-                const balisticAvatar = getDevAvatarUrl('winkygamer098');
+                const balisticAvatar = getDevAvatarUrl('winky_is_tuff');
                 
                 body = `<div class="credits-container">
                     <div class="credits-header">Devs / Creators</div>
@@ -852,7 +858,7 @@
                     </div>
                     <div class="creator-row">
                         <div id="credits-pfp-c3" class="creator-pfp" style="background-image: url('${balisticAvatar}');"></div>
-                        <div class="creator-name">Winkygamer098</div>
+                        <div class="creator-name">winky_is_tuff</div>
                     </div>
                 </div>`;
             } else {
