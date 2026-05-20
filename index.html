@@ -199,7 +199,7 @@
             padding: 0 20px; 
             z-index: 9999; 
             gap: 15px;
-            transition: transform 0.8s cubic-bezier(0,1,0,1); 
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             pointer-events: all;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
@@ -341,7 +341,7 @@
     <div id="desktop"></div>
 
     <div id="taskbar">
-        <div class="weather-widget" title="Current Local Conditions" style="cursor: pointer;" onclick="spawnProxy('weather', 'https://merrysky.net/forecast/Downingtown,%20Chester%20County,%20Pennsylvania,%2019335,%20United%20States/si'); setTimeout(() => { const win = document.getElementById('win-weather'); if(win && !win.classList.contains('maximized')) win.classList.add('maximized'); }, 50);">
+        <div class="weather-widget" title="Current Local Conditions" style="cursor: pointer;" onclick="spawnProxy('weather', 'https://merrysky.net/forecast/Downingtown,%20Chester%20County,%20Pennsylvania,%2019335,%20United%20States/si');">
             <span style="font-size: 1rem; margin-top: 2px; cursor: pointer;">☁️</span>
             <span id="temp-display" style="font-size: 0.65rem; font-weight: bold; cursor: pointer;">72°</span>
         </div>
@@ -392,11 +392,24 @@
         let isDev = false;
         let activeUserKey = '';
         let timeFormat = '24h';
+        let isTaskbarUnlocked = false; // Added to track taskbar state
 
         let mouse = { x: -2000, y: -2000 };
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
+
+            // --- TASKBAR AUTO-HIDE LOGIC ---
+            if (isTaskbarUnlocked) {
+                const tb = document.getElementById('taskbar');
+                // Trigger area: Show when cursor is in the bottom 80 pixels
+                if (e.clientY > window.innerHeight - 80) {
+                    tb.style.transform = 'translateX(-50%) translateY(0)';
+                } else if (e.clientY < window.innerHeight - 120) { 
+                    // Hide when cursor moves away (added buffer to prevent flickering)
+                    tb.style.transform = 'translateX(-50%) translateY(120px)';
+                }
+            }
         });
 
         const DEV_KEYS = {
@@ -459,9 +472,6 @@
             }
         }
 
-        window.addEventListener('mousemove', (e) => {
-            if(activeEngine === 'pool') triggerPoolRipple(e.clientX, e.clientY, 120);
-        });
         window.addEventListener('mousedown', (e) => {
             if(activeEngine === 'pool') triggerPoolRipple(e.clientX, e.clientY, 1500);
         });
@@ -788,7 +798,16 @@
                 document.getElementById('gatekeeper').style.display = 'none';
                 document.getElementById('desktop').style.opacity = '1';
                 document.getElementById('desktop').style.pointerEvents = 'all';
+                isTaskbarUnlocked = true;
+
+                // Pop up the taskbar temporarily to show the user it exists
                 document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(0)';
+                
+                // Hide it again after 2 seconds
+                setTimeout(() => {
+                    document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(120px)';
+                }, 2000);
+
             }, 1000);
         }
 
@@ -850,6 +869,9 @@
                 <div class="win-body"><iframe src="${url}"></iframe></div>
             `;
             document.body.appendChild(win);
+            
+            // Auto maximize proxy windows
+            win.classList.add('maximized');
         }
 
         // --- NEW BROADCAST FUNCTIONS ---
@@ -990,6 +1012,9 @@
                 <div class="win-body">${body}</div>`
             ;
             document.body.appendChild(win);
+            
+            // Auto maximize core app windows
+            win.classList.add('maximized');
         }
 
         function setAccent(color) {
