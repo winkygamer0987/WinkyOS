@@ -14,7 +14,6 @@
             --border: rgba(255, 255, 255, 0.08);
         }
 
-        /* Restored default cursor behavior for selectable areas to allow copy/paste */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Comfortaa', cursive; cursor: default; }
         
         body { 
@@ -22,7 +21,6 @@
             color: #fff; height: 100vh; overflow: hidden;
         }
 
-        /* Allows selection and standard text interactions inside windows and inputs */
         input, textarea, .win-body, .chrono-text, .creator-name {
             cursor: text;
             user-select: text;
@@ -105,7 +103,7 @@
             line-height: 1.1;
         }
         .chrono-time { 
-            font-size: 2.2rem; 
+            font-size: 1.7rem; /* Resized slightly to fit MM:SS format */
             font-weight: 700; 
             color: #fff; 
             text-shadow: 0 4px 15px rgba(0,0,0,0.9);
@@ -153,10 +151,10 @@
         }
         .vault-btn:hover { transform: scale(1.03); box-shadow: 0 0 25px var(--accent-glow); }
 
-        /* --- DESKTOP LAYER (Hidden for Dock logic) --- */
+        /* --- DESKTOP LAYER --- */
         #desktop {
             position: absolute; inset: 0; z-index: 3; opacity: 0; pointer-events: none; transition: 1s;
-            display: none; /* Hidden since apps moved to dock */
+            display: none; 
         }
 
         /* --- WINDOWS --- */
@@ -224,38 +222,24 @@
             border-color: var(--accent);
         }
 
-        .start-btn {
-            width: 48px; height: 48px; border-radius: 14px;
-            background: var(--accent); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 1.5rem; color: #000; box-shadow: 0 0 15px var(--accent-glow);
+        .weather-widget {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        
-        .start-btn:hover {
+        .weather-widget:hover {
             transform: translateY(-12px) scale(1.15);
-        }
-
-        .search-bar {
-            width: 180px; height: 40px; background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border); border-radius: 12px;
-            padding: 0 15px; color: #fff; font-size: 0.85rem; outline: none;
-        }
-        .search-bar:focus { border-color: var(--accent); }
-
-        .weather-widget {
-            display: flex; align-items: center; gap: 8px;
-            padding: 0 15px; height: 40px; border-radius: 12px;
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-            font-size: 0.75rem; color: #fff;
+            background: rgba(255,255,255,0.15); 
+            border-color: var(--accent);
         }
 
         .profile-trigger {
-            display: flex; align-items: center; gap: 12px; padding: 8px 15px; border-radius: 12px; margin-left: auto;
+            display: flex; align-items: center; gap: 12px; padding: 8px 5px; border-radius: 12px; margin-left: auto;
         }
-        .pfp-circle { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--accent); background: #111; cursor: pointer; background-size: cover; background-position: center; }
+        .pfp-circle { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); background: #111; cursor: pointer; background-size: cover; background-position: center; }
 
-        .tray { font-family: 'JetBrains Mono'; color: var(--accent); font-size: 0.8rem; min-width: 90px; text-align: right; }
-        
         .bg-scroll-area { 
             display: flex; flex-direction: column; gap: 10px; 
             max-height: 160px; overflow-y: auto; padding-right: 5px;
@@ -308,7 +292,7 @@
                 <circle id="chrono-progress-ring" class="chrono-progress" cx="20" cy="20" r="18"></circle>
             </svg>
             <div class="chrono-text">
-                <span id="chrono-time-display" class="chrono-time">00h</span>
+                <span id="chrono-time-display" class="chrono-time">00:00</span>
                 <span id="chrono-day-display" class="chrono-day">---</span>
             </div>
         </div>
@@ -328,28 +312,19 @@
     <div id="desktop"></div>
 
     <div id="taskbar">
-        <div class="start-btn" onclick="spawnProxy('WinkyOS', 'https://lmslm4-8080.csb.app/scramjet/https%3A%2F%2Fgithub.com%2Fwinkygamer0987%2FWinkyOS')" title="Launch WinkyOS">☄</div>
-        
+        <div class="weather-widget" title="Current Local Conditions">
+            <span style="font-size: 1rem; margin-top: 2px;">☁️</span>
+            <span id="temp-display" style="font-size: 0.65rem; font-weight: bold;">72°</span>
+        </div>
+
         <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
         <div id="dock-apps" style="display: flex; gap: 12px;"></div>
         <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
 
-        <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
-        
-        <div class="weather-widget" title="Current Local Conditions">
-            <span>☁️</span>
-            <span id="temp-display">72°F</span>
-            <span style="opacity: 0.4">|</span>
-            <span style="font-size: 0.6rem; letter-spacing: 1px;">WINKY_CO</span>
-        </div>
-
         <div class="profile-trigger">
             <div class="pfp-circle" id="pfp-accent" onclick="triggerPfpUpload()"></div>
             <input type="file" id="pfp-file-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
-            <div style="font-size:0.7rem; font-weight:700;" id="user-display">winky_LINK</div>
         </div>
-
-        <div class="tray" id="clock">00:00:00</div>
     </div>
 
     <script>
@@ -408,7 +383,7 @@
             ptCtx.fillStyle = '#e0f7fa'; ptCtx.font = 'bold 220px serif';
             ptCtx.textAlign = 'center'; ptCtx.textBaseline = 'middle';
             ptCtx.shadowBlur = 30; ptCtx.shadowColor = 'rgba(0,255,255,0.6)';
-            ptCtx.fillText('W & CO', pWidth/2, pHeight/2);
+            ptCtx.fillText('WinkyOS', pWidth/2, pHeight/2);
         }
 
         function triggerPoolRipple(x, y, strength) {
@@ -575,15 +550,6 @@
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
             
-            if (timeFormat === '12h') {
-                let displayHours = hours % 12;
-                displayHours = displayHours ? displayHours : 12; 
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                document.getElementById('clock').innerText = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
-            } else {
-                document.getElementById('clock').innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-            
             const totalPassedSeconds = (hours * 3600) + (minutes * 60) + seconds;
             const totalDaySeconds = 86400; 
             const dayCompletionRatio = totalPassedSeconds / totalDaySeconds;
@@ -593,14 +559,8 @@
             
             document.getElementById('chrono-progress-ring').style.strokeDashoffset = offset;
             
-            if (timeFormat === '12h') {
-                let hudHours = hours % 12;
-                hudHours = hudHours ? hudHours : 12;
-                const marker = hours >= 12 ? 'p' : 'a';
-                document.getElementById('chrono-time-display').innerText = `${hudHours.toString().padStart(2, '0')}${marker}`;
-            } else {
-                document.getElementById('chrono-time-display').innerText = `${hours.toString().padStart(2, '0')}h`;
-            }
+            // Minutes and seconds logic for the HUD Ring
+            document.getElementById('chrono-time-display').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
             const daysMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
             document.getElementById('chrono-day-display').innerText = daysMap[now.getDay()];
@@ -702,11 +662,12 @@
         function authenticate() {
             const rawInput = document.getElementById('pass-input').value;
             const inputVal = rawInput.toUpperCase().trim();
+            const userDisplay = document.getElementById('user-display');
             
             if (DEV_KEYS[inputVal]) {
                 activeUserKey = DEV_KEYS[inputVal]; 
                 isDev = true;
-                document.getElementById('user-display').innerText = activeUserKey;
+                if(userDisplay) userDisplay.innerText = activeUserKey;
                 document.getElementById('pfp-accent').style.cursor = 'pointer';
                 document.getElementById('pfp-accent').style.backgroundImage = `url('${getDevAvatarUrl(activeUserKey)}')`;
 
@@ -715,7 +676,7 @@
             } else if (inputVal === 'WINKYGAMER098') {
                 isDev = true;
                 activeUserKey = 'winkygamer098';
-                document.getElementById('user-display').innerText = 'WINKYGAMER098';
+                if(userDisplay) userDisplay.innerText = 'WINKYGAMER098';
                 document.getElementById('pfp-accent').style.cursor = 'default';
                 document.getElementById('pfp-accent').style.backgroundImage = `none`;
                 
@@ -734,7 +695,7 @@
                 }
                 
                 activeUserKey = winkyId;
-                document.getElementById('user-display').innerText = winkyId.toUpperCase();
+                if(userDisplay) userDisplay.innerText = winkyId.toUpperCase();
                 document.getElementById('pfp-accent').style.cursor = 'default';
                 document.getElementById('pfp-accent').style.backgroundImage = `none`;
                 
@@ -909,13 +870,6 @@
 
         function maxWin(id) { document.getElementById(id).classList.toggle('maximized'); }
         function focusWin(id) { document.getElementById(id).style.zIndex = ++zIdx; }
-
-        function filterApps() {
-            let q = document.querySelector('.search-bar').value.toLowerCase();
-            document.querySelectorAll('.dock-icon').forEach(node => {
-                node.style.display = node.title.toLowerCase().includes(q) ? 'flex' : 'none';
-            });
-        }
     </script>
 </body>
 </html>
