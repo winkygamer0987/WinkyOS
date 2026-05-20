@@ -407,8 +407,9 @@
             'winky_is_tuff': "https://cdn.discordapp.com/attachments/1464378795376115819/1505398226621173851/a18eaea1-2b2c-4c3e-9a66-479cd12a700e.jpg?ex=6a0a7ada&is=6a09295a&hm=82d59a1d83d393a3daa804c91f73c261f42b96e0eb111633ea1d38105220368d&"
         };
 
+        // --- UPDATED REGISTRY ---
         const APP_REGISTRY = [
-            { type: 'proxy', name: 'hiring', label: 'Hiring', icon: '💼', url: 'https://forms.gle/P2ofT1AEgTiukB4TA', devOnly: false },
+            { type: 'core', name: 'games', label: 'Games', icon: '🎮' },
             { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' },
             { type: 'core', name: 'credits', label: 'Credits', icon: '🎬' },
             { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false },
@@ -927,6 +928,36 @@
                     
                     ${adminPanel}
                 </div>`;
+            
+            // --- NEW GAMES MENU DIRECTORY ---
+            } else if (app === 'games') {
+                ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
+                
+                const gamesList = [
+                    { name: 'BSS', url: 'https://dddatt.github.io/bss/', img: 'https://placehold.co/250x140/1a1f2b/00d2ff?text=BSS' },
+                    { name: 'Core Ball', url: 'https://rpc.lol/games/projects/core-ball/index.html', img: 'https://placehold.co/250x140/1a1f2b/00d2ff?text=Core+Ball' },
+                    { name: 'Eaglercraft 1.20', url: 'https://eaglercraft.dev/clients/EaglyMC%201.20%20JS/index.html', img: 'https://placehold.co/250x140/1a1f2b/00d2ff?text=Eaglercraft+1.20' },
+                    { name: 'Eaglercraft 1.8.8', url: 'https://eaglercraft.dev/clients/Release%201.8.8%20JS/index.html', img: 'https://placehold.co/250x140/1a1f2b/00d2ff?text=Eaglercraft+1.8.8' },
+                    { name: 'Curved Moccasin', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://placehold.co/250x140/1a1f2b/00d2ff?text=Cloud+App' }
+                ];
+
+                let gamesHTML = gamesList.map(g => `
+                    <div class="game-card" onclick="spawnProxy('${g.name.replace(/ /g, '_')}', '${g.url}')" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)';" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.3s ease; text-align: center;">
+                        <img src="${g.img}" style="width: 100%; border-radius: 8px; margin-bottom: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05); pointer-events: none;">
+                        <div style="font-size: 0.8rem; font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent); pointer-events: none;">${g.name}</div>
+                    </div>
+                `).join('');
+
+                body = `<div style="padding: 22px; height: 100%; overflow-y: auto;">
+                    <p style="font-size:0.65rem; opacity:0.5; margin-bottom:15px; letter-spacing:1px;">GAME_DIRECTORY // SELECT TO INITIALIZE UPLINK</p>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; padding-bottom: 20px;">
+                        ${gamesHTML}
+                    </div>
+                </div>`;
+                
+                win.style.width = '480px';
+                win.style.height = '460px';
+
             } else if (app === 'credits') {
                 ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
                 
