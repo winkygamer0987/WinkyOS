@@ -153,24 +153,10 @@
         }
         .vault-btn:hover { transform: scale(1.03); box-shadow: 0 0 25px var(--accent-glow); }
 
-        /* --- DESKTOP LAYER --- */
+        /* --- DESKTOP LAYER (Hidden for Dock logic) --- */
         #desktop {
-            position: absolute; inset: 0; padding: 30px;
-            display: grid; grid-template-columns: repeat(auto-fill, 110px);
-            grid-template-rows: repeat(auto-fill, 130px);
-            grid-auto-flow: column; gap: 15px; z-index: 3; opacity: 0; pointer-events: none; transition: 1s;
-        }
-
-        .node {
-            width: 100px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 20px; transition: 0.3s; text-align: center; pointer-events: all;
-        }
-        .node:hover { background: rgba(255,255,255,0.08); border: 1px solid var(--border); transform: translateY(-5px); }
-
-        .node-icon {
-            width: 58px; height: 58px; border-radius: 18px; background: rgba(255,255,255,0.05);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 10px; border: 1px solid var(--border); font-size: 1.6rem;
+            position: absolute; inset: 0; z-index: 3; opacity: 0; pointer-events: none; transition: 1s;
+            display: none; /* Hidden since apps moved to dock */
         }
 
         /* --- WINDOWS --- */
@@ -181,7 +167,7 @@
             box-shadow: 0 40px 80px rgba(0,0,0,0.7);
             display: none; flex-direction: column; overflow: hidden; z-index: 100; pointer-events: all;
         }
-        .win.maximized { inset: 10px !important; width: calc(100% - 20px) !important; height: calc(100% - 85px) !important; border-radius: 12px; }
+        .win.maximized { inset: 10px !important; width: calc(100% - 20px) !important; height: calc(100% - 100px) !important; border-radius: 12px; }
 
         .win-bar {
             padding: 15px 20px; background: rgba(255,255,255,0.03);
@@ -196,22 +182,61 @@
         .win-body { flex-grow: 1; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
 
-        /* --- TASKBAR --- */
+        /* --- MACBOOK STYLE DOCK & ICONS --- */
         #taskbar {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
-            background: rgba(5, 8, 15, 0.95); backdrop-filter: blur(30px);
-            border-top: 1px solid var(--border); display: flex; align-items: center; padding: 0 15px; z-index: 9999; gap: 15px;
-            transform: translateY(100px); transition: 0.8s cubic-bezier(0,1,0,1); pointer-events: all;
+            position: fixed; 
+            bottom: 15px; 
+            left: 50%; 
+            transform: translateX(-50%) translateY(150px);
+            height: 75px; 
+            width: max-content; 
+            background: rgba(20, 25, 35, 0.4); 
+            backdrop-filter: blur(25px); 
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 25px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 0 20px; 
+            z-index: 9999; 
+            gap: 15px;
+            transition: transform 0.8s cubic-bezier(0,1,0,1); 
+            pointer-events: all;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .dock-icon {
+            width: 48px; height: 48px; 
+            border-radius: 14px; 
+            background: rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            border: 1px solid var(--border); 
+            font-size: 1.5rem;
+            cursor: pointer; 
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .dock-icon:hover {
+            transform: translateY(-12px) scale(1.15);
+            background: rgba(255,255,255,0.15); 
+            border-color: var(--accent);
         }
 
         .start-btn {
-            width: 45px; height: 45px; border-radius: 14px;
+            width: 48px; height: 48px; border-radius: 14px;
             background: var(--accent); display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-size: 1.5rem; color: #000; box-shadow: 0 0 15px var(--accent-glow);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-12px) scale(1.15);
         }
 
         .search-bar {
-            width: 200px; height: 40px; background: rgba(255,255,255,0.05);
+            width: 180px; height: 40px; background: rgba(255,255,255,0.05);
             border: 1px solid var(--border); border-radius: 12px;
             padding: 0 15px; color: #fff; font-size: 0.85rem; outline: none;
         }
@@ -303,7 +328,12 @@
     <div id="desktop"></div>
 
     <div id="taskbar">
-        <div class="start-btn" onclick="spawnProxy('WinkyOS', 'https://lmslm4-8080.csb.app/scramjet/https%3A%2F%2Fgithub.com%2Fwinkygamer0987%2FWinkyOS')">☄</div>
+        <div class="start-btn" onclick="spawnProxy('WinkyOS', 'https://lmslm4-8080.csb.app/scramjet/https%3A%2F%2Fgithub.com%2Fwinkygamer0987%2FWinkyOS')" title="Launch WinkyOS">☄</div>
+        
+        <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+        <div id="dock-apps" style="display: flex; gap: 12px;"></div>
+        <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+
         <input type="text" class="search-bar" placeholder="Search Uplinks..." onkeyup="filterApps()">
         
         <div class="weather-widget" title="Current Local Conditions">
@@ -648,23 +678,24 @@
         }
 
         function generateDesktopEnvironment() {
-            const desktop = document.getElementById('desktop');
-            desktop.innerHTML = ''; 
+            const dockApps = document.getElementById('dock-apps');
+            dockApps.innerHTML = ''; 
 
             APP_REGISTRY.forEach(app => {
                 if (app.devOnly && !isDev) return;
 
                 const node = document.createElement('div');
-                node.className = 'node';
+                node.className = 'dock-icon';
+                node.title = app.label;
                 
                 if (app.type === 'core') {
-                    node.setAttribute('ondblclick', `spawn('${app.name}')`);
+                    node.setAttribute('onclick', `spawn('${app.name}')`);
                 } else {
-                    node.setAttribute('ondblclick', `spawnProxy('${app.name}', '${app.url}')`);
+                    node.setAttribute('onclick', `spawnProxy('${app.name}', '${app.url}')`);
                 }
 
-                node.innerHTML = `<div class="node-icon">${app.icon}</div><div style="font-size:0.7rem;">${app.label}</div>`;
-                desktop.appendChild(node);
+                node.innerHTML = app.icon;
+                dockApps.appendChild(node);
             });
         }
 
@@ -722,7 +753,7 @@
                 document.getElementById('gatekeeper').style.display = 'none';
                 document.getElementById('desktop').style.opacity = '1';
                 document.getElementById('desktop').style.pointerEvents = 'all';
-                document.getElementById('taskbar').style.transform = 'translateY(0)';
+                document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(0)';
             }, 1000);
         }
 
@@ -881,8 +912,8 @@
 
         function filterApps() {
             let q = document.querySelector('.search-bar').value.toLowerCase();
-            document.querySelectorAll('.node').forEach(node => {
-                node.style.display = node.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+            document.querySelectorAll('.dock-icon').forEach(node => {
+                node.style.display = node.title.toLowerCase().includes(q) ? 'flex' : 'none';
             });
         }
     </script>
