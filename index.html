@@ -392,7 +392,7 @@
         let isDev = false;
         let activeUserKey = '';
         let timeFormat = '24h';
-        let isTaskbarUnlocked = false; // Added to track taskbar state
+        let isTaskbarUnlocked = false; 
 
         let mouse = { x: -2000, y: -2000 };
         window.addEventListener('mousemove', (e) => {
@@ -402,11 +402,9 @@
             // --- TASKBAR AUTO-HIDE LOGIC ---
             if (isTaskbarUnlocked) {
                 const tb = document.getElementById('taskbar');
-                // Trigger area: Show when cursor is in the bottom 80 pixels
                 if (e.clientY > window.innerHeight - 80) {
                     tb.style.transform = 'translateX(-50%) translateY(0)';
                 } else if (e.clientY < window.innerHeight - 120) { 
-                    // Hide when cursor moves away (added buffer to prevent flickering)
                     tb.style.transform = 'translateX(-50%) translateY(120px)';
                 }
             }
@@ -420,7 +418,6 @@
             'winky_is_tuff': "https://cdn.discordapp.com/attachments/1464378795376115819/1505398226621173851/a18eaea1-2b2c-4c3e-9a66-479cd12a700e.jpg?ex=6a0a7ada&is=6a09295a&hm=82d59a1d83d393a3daa804c91f73c261f42b96e0eb111633ea1d38105220368d&"
         };
 
-        // --- UPDATED REGISTRY ---
         const APP_REGISTRY = [
             { type: 'core', name: 'games', label: 'Games', icon: '🎮' },
             { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' },
@@ -620,14 +617,12 @@
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
             
-            // Handle AM/PM logic
             const ampm = hours >= 12 ? 'PM' : 'AM';
             
-            // Format hours for display based on format preference
             let displayHours = hours;
             if (timeFormat === '12h') {
                 displayHours = hours % 12;
-                displayHours = displayHours ? displayHours : 12; // the hour '0' should be '12'
+                displayHours = displayHours ? displayHours : 12; 
             }
             
             const totalPassedSeconds = (hours * 3600) + (minutes * 60) + seconds;
@@ -639,7 +634,6 @@
             
             document.getElementById('chrono-progress-ring').style.strokeDashoffset = offset;
             
-            // Update time display with hours and AM/PM
             const timeString = timeFormat === '12h' 
                 ? `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`
                 : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
@@ -800,10 +794,8 @@
                 document.getElementById('desktop').style.pointerEvents = 'all';
                 isTaskbarUnlocked = true;
 
-                // Pop up the taskbar temporarily to show the user it exists
                 document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(0)';
                 
-                // Hide it again after 2 seconds
                 setTimeout(() => {
                     document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(120px)';
                 }, 2000);
@@ -953,7 +945,11 @@
             
             // --- NEW GAMES MENU DIRECTORY ---
             } else if (app === 'games') {
-                ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
+                ctrlButtons = `
+                    <button class="win-btn btn-max" onclick="maxWin('${id}')"></button>
+                    <button class="win-btn btn-refresh" onclick="refreshWin('${id}')"></button>
+                    <button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>
+                `;
                 
                 const gamesList = [
                     { name: 'BSS', url: 'https://dddatt.github.io/bss/', img: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c253bd04-f7ef-411e-a2c0-91c17d781d10/derbtnn-ff190dd7-54fa-4098-9469-affb1fbe980a.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9jMjUzYmQwNC1mN2VmLTQxMWUtYTJjMC05MWMxN2Q3ODFkMTAvZGVyYnRubi1mZjE5MGRkNy01NGZhLTQwOTgtOTQ2OS1hZmZiMWZiZTk4MGEucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.fgxMx5uLPheT1MEOoJxM0o88oZXOQw00C5VndjvfkYc' },
@@ -1013,8 +1009,10 @@
             ;
             document.body.appendChild(win);
             
-            // Auto maximize core app windows
-            win.classList.add('maximized');
+            // Auto maximize core app windows, EXCEPT the games menu
+            if (app !== 'games') {
+                win.classList.add('maximized');
+            }
         }
 
         function setAccent(color) {
