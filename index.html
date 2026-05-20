@@ -544,11 +544,21 @@
         /* ========================================================================
             CORE ENGINE LOOP RUNNER, MATRIX CHRONOMETER & OS LOGIC
             ======================================================================== */
-        function updateSystemTimeMetrics() {
+function updateSystemTimeMetrics() {
             const now = new Date();
-            const hours = now.getHours();
+            let hours = now.getHours();
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
+            
+            // Handle AM/PM logic
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            // Format hours for display based on format preference
+            let displayHours = hours;
+            if (timeFormat === '12h') {
+                displayHours = hours % 12;
+                displayHours = displayHours ? displayHours : 12; // the hour '0' should be '12'
+            }
             
             const totalPassedSeconds = (hours * 3600) + (minutes * 60) + seconds;
             const totalDaySeconds = 86400; 
@@ -559,7 +569,12 @@
             
             document.getElementById('chrono-progress-ring').style.strokeDashoffset = offset;
             
-            document.getElementById('chrono-time-display').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            // Update time display with hours and AM/PM
+            const timeString = timeFormat === '12h' 
+                ? `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`
+                : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            
+            document.getElementById('chrono-time-display').innerText = timeString;
             
             const daysMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
             document.getElementById('chrono-day-display').innerText = daysMap[now.getDay()];
