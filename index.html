@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -861,6 +862,9 @@
                 <div class="win-body"><iframe src="${url}"></iframe></div>
             `;
             document.body.appendChild(win);
+            
+            // Auto maximize proxy windows
+            win.classList.add('maximized');
         }
 
         // --- NEW BROADCAST FUNCTIONS ---
@@ -953,9 +957,7 @@
                     { name: 'Core Ball', url: 'https://rpc.lol/games/projects/core-ball/index.html', img: 'https://www.cokogames.com/wp-content/uploads/thumbs/custom/C/coreball-150x150.jpg' },
                     { name: 'Eaglercraft 1.20', url: 'https://eaglercraft.dev/clients/EaglyMC%201.20%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
                     { name: 'Eaglercraft 1.8.8', url: 'https://eaglercraft.dev/clients/Release%201.8.8%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
-                    { name: 'Drive Mad', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://online.pubhtml5.com/xgyih/accountlogo.png' },
-                    { name: 'Plague INC', url: 'https://eastern-ivory-e3subkfgha.edgeone.app/', img: 'https://store-images.s-microsoft.com/image/apps.28728.69945075044825416.99d4e5d8-fac1-421b-8986-d0fed49db992.61e009b6-5efb-456c-8f70-98bd73e50a3d?q=90&w=177&h=265 },
-                    { name: 'Bloons TD 5', url: 'https://clinical-brown-kgz3etd0pg.edgeone.app/', img: 'http://files.armorgames.com/misc/JYLwtPRHQWCJ8eMAotw5_620x320.jpg' }
+                    { name: 'Drive Mad', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://online.pubhtml5.com/xgyih/accountlogo.png' }
                 ];
 
                 let gamesHTML = gamesList.map(g => `
@@ -1007,6 +1009,11 @@
                 <div class="win-body">${body}</div>`
             ;
             document.body.appendChild(win);
+            
+            // Auto maximize core app windows, EXCEPT the games menu
+            if (app !== 'games') {
+                win.classList.add('maximized');
+            }
         }
 
         function setAccent(color) {
