@@ -861,9 +861,6 @@
                 <div class="win-body"><iframe src="${url}"></iframe></div>
             `;
             document.body.appendChild(win);
-            
-            // Auto maximize proxy windows
-            win.classList.add('maximized');
         }
 
         // --- NEW BROADCAST FUNCTIONS ---
@@ -1008,11 +1005,6 @@
                 <div class="win-body">${body}</div>`
             ;
             document.body.appendChild(win);
-            
-            // Auto maximize core app windows, EXCEPT the games menu
-            if (app !== 'games') {
-                win.classList.add('maximized');
-            }
         }
 
         function setAccent(color) {
