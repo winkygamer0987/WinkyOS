@@ -952,12 +952,13 @@
                     <button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>
                 `;
                 
-                const gamesList = [
+                  const gamesList = [
                     { name: 'BSS', url: 'https://dddatt.github.io/bss/', img: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c253bd04-f7ef-411e-a2c0-91c17d781d10/derbtnn-ff190dd7-54fa-4098-9469-affb1fbe980a.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9jMjUzYmQwNC1mN2VmLTQxMWUtYTJjMC05MWMxN2Q3ODFkMTAvZGVyYnRubi1mZjE5MGRkNy01NGZhLTQwOTgtOTQ2OS1hZmZiMWZiZTk4MGEucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.fgxMx5uLPheT1MEOoJxM0o88oZXOQw00C5VndjvfkYc' },
                     { name: 'Core Ball', url: 'https://rpc.lol/games/projects/core-ball/index.html', img: 'https://www.cokogames.com/wp-content/uploads/thumbs/custom/C/coreball-150x150.jpg' },
                     { name: 'Eaglercraft 1.20', url: 'https://eaglercraft.dev/clients/EaglyMC%201.20%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
                     { name: 'Eaglercraft 1.8.8', url: 'https://eaglercraft.dev/clients/Release%201.8.8%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
-                    { name: 'Drive Mad', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://online.pubhtml5.com/xgyih/accountlogo.png' }
+                    { name: 'Drive Mad', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://online.pubhtml5.com/xgyih/accountlogo.png' },
+                    { name: 'Unicycle Hero', url: 'https://losor.freetls.fastly.net/iframe?url=public/assets/games/unicycle-hero/', img: 'https://via.placeholder.com/150/020408/00d2ff?text=Unicycle+Hero' }
                 ];
 
                 let gamesHTML = gamesList.map(g => `
