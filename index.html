@@ -27,7 +27,7 @@
             -webkit-user-select: text;
         }
 
-        /* --- BACKGROUND CANVAS ARCHITECTURE --- */
+
         #canvas-container {
             position: fixed;
             inset: 0;
@@ -46,7 +46,6 @@
             display: block;
         }
 
-        /* --- DESKTOP CORE HUD BACKGROUND MATRIX --- */
         #desktop-hud-container {
             position: fixed;
             top: 0;
@@ -118,7 +117,7 @@
             text-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
 
-        /* --- SECURITY CHECKPOINT --- */
+
         #gatekeeper {
             position: fixed; inset: 0; background: radial-gradient(circle at center, #0a101a 0%, #000 100%);
             z-index: 500000; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -151,13 +150,12 @@
         }
         .vault-btn:hover { transform: scale(1.03); box-shadow: 0 0 25px var(--accent-glow); }
 
-        /* --- DESKTOP LAYER --- */
         #desktop {
             position: absolute; inset: 0; z-index: 3; opacity: 0; pointer-events: none; transition: 1s;
             display: none; 
         }
 
-        /* --- WINDOWS --- */
+
         .win {
             position: absolute; min-width: 400px; min-height: 300px;
             background: var(--glass); border: 1px solid var(--border);
@@ -180,7 +178,7 @@
         .win-body { flex-grow: 1; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
 
-        /* --- MACBOOK STYLE DOCK & ICONS --- */
+ 
         #taskbar {
             position: fixed; 
             bottom: 15px; 
@@ -269,7 +267,6 @@
             background: var(--accent); color: #000; box-shadow: 0 0 10px var(--accent-glow);
         }
 
-        /* --- CREDITS UI SPECIFIC --- */
         .credits-container { padding: 30px; display: flex; flex-direction: column; gap: 25px; }
         .credits-header { font-size: 0.7rem; opacity: 0.5; letter-spacing: 2px; font-family: 'JetBrains Mono'; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .creator-row { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 12px 20px; border-radius: 16px; transition: 0.3s; }
@@ -277,7 +274,6 @@
         .creator-pfp { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 0 10px var(--accent-glow); background-color: #111; }
         .creator-name { font-size: 0.95rem; font-weight: 500; letter-spacing: 0.5px; }
 
-        /* --- GLOBAL ANNOUNCEMENT BANNER --- */
         #announcementBanner {
             position: fixed;
             top: -80px; 
@@ -399,7 +395,7 @@
             mouse.x = e.clientX;
             mouse.y = e.clientY;
 
-            // --- TASKBAR AUTO-HIDE LOGIC ---
+
             if (isTaskbarUnlocked) {
                 const tb = document.getElementById('taskbar');
                 if (e.clientY > window.innerHeight - 80) {
@@ -425,9 +421,7 @@
             { type: 'proxy', name: 'winkyai', label: 'Winky AI', icon: '🤖', url: 'https://silky-emerald-59dbu7ifkp.edgeone.app/', devOnly: false },
             { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' }
         ];
-        /* ========================================================================
-           BACKGROUND ENGINE 1: O&B LIVING POOL ENGINE (SUBMERGED)
-           ======================================================================== */
+
         const poolCanvas = document.getElementById('poolCanvas');
         const pCtx = poolCanvas.getContext('2d');
         let pWidth, pHeight, cols, rows, buffer1, buffer2;
@@ -519,9 +513,7 @@
             let temp = buffer1; buffer1 = buffer2; buffer2 = temp;
         }
 
-        /* ========================================================================
-            BACKGROUND ENGINE 2: SINGULARITY LIQUID SMOOTH WARP ENGINE (WARP)
-            ======================================================================== */
+
         const warpCanvas = document.getElementById('warpCanvas');
         const wCtx = warpCanvas.getContext('2d', { alpha: false, desynchronized: true });
         let wWidth, wHeight, wSize;
@@ -607,9 +599,7 @@
             wCtx.putImageData(outputData, 0, 0);
         }
 
-        /* ========================================================================
-            CORE ENGINE LOOP RUNNER, MATRIX CHRONOMETER & OS LOGIC
-            ======================================================================== */
+
         function updateSystemTimeMetrics() {
             const now = new Date();
             let hours = now.getHours();
@@ -861,11 +851,9 @@
             `;
             document.body.appendChild(win);
             
-            // Auto maximize proxy windows
             win.classList.add('maximized');
         }
 
-        // --- NEW BROADCAST FUNCTIONS ---
         window.sendBroadcast = async () => {
             const input = document.getElementById('adminBroadcastInput');
             const msg = input.value;
@@ -901,7 +889,7 @@
             if (app === 'settings') {
                 ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
                 
-                // --- ADMIN PANEL UI INJECTION ---
+
                 let adminPanel = '';
                 if (activeUserKey === 'winkygamer098') {
                     adminPanel = `
@@ -942,7 +930,7 @@
                     ${adminPanel}
                 </div>`;
             
-            // --- NEW GAMES MENU DIRECTORY ---
+
             } else if (app === 'games') {
                 ctrlButtons = `
                     <button class="win-btn btn-max" onclick="maxWin('${id}')"></button>
@@ -1009,7 +997,6 @@ const gamesList = [
             ;
             document.body.appendChild(win);
             
-            // Auto maximize core app windows, EXCEPT the games menu
             if (app !== 'games') {
                 win.classList.add('maximized');
             }
