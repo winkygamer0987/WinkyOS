@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
 
-.battery-widget {
+        .battery-widget {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
             width: 48px; height: 48px; border-radius: 50%;
             background: rgba(255,255,255,0.05); border: 1px solid var(--border);
@@ -40,7 +40,6 @@
             user-select: text;
             -webkit-user-select: text;
         }
-
 
         #canvas-container {
             position: fixed;
@@ -131,7 +130,6 @@
             text-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
 
-
         #gatekeeper {
             position: fixed; inset: 0; background: radial-gradient(circle at center, #0a101a 0%, #000 100%);
             z-index: 500000; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -169,7 +167,6 @@
             display: none; 
         }
 
-
         .win {
             position: absolute; min-width: 400px; min-height: 300px;
             background: var(--glass); border: 1px solid var(--border);
@@ -192,7 +189,6 @@
         .win-body { flex-grow: 1; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
 
- 
         #taskbar {
             position: fixed; 
             bottom: 15px; 
@@ -356,23 +352,6 @@
             <span id="temp-display" style="font-size: 0.65rem; font-weight: bold; cursor: pointer;">72°</span>
         </div>
 
-        <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
-        <div id="dock-apps" style="display: flex; gap: 12px;"></div>
-        <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
-
-        <div class="profile-trigger">
-            <div class="pfp-circle" id="pfp-accent" onclick="triggerPfpUpload()"></div>
-            <input type="file" id="pfp-file-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
-        </div>
-    </div>
-
-<div id="taskbar">
-
-        <div class="weather-widget" title="Current Local Conditions" style="cursor: pointer;" onclick="spawnProxy('weather', 'https://merrysky.net/forecast/Downingtown,%20Chester%20County,%20Pennsylvania,%2019335,%20United%20States/si');">
-            <span style="font-size: 1rem; margin-top: 2px; cursor: pointer;">☁️</span>
-            <span id="temp-display" style="font-size: 0.65rem; font-weight: bold; cursor: pointer;">72°</span>
-        </div>
-
         <div class="battery-widget" title="System Battery">
             <span id="battery-icon" style="font-size: 1rem; margin-top: 2px;">🔋</span>
             <span id="battery-display" style="font-size: 0.65rem; font-weight: bold;">--%</span>
@@ -387,6 +366,36 @@
             <input type="file" id="pfp-file-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
         </div>
     </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, onSnapshot, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+        const conf = { 
+            apiKey: "AIzaSyBeAFKSgGuMVzZn4i59Bs_0rnQT_TsmnY4", 
+            projectId: "teddy-bear-tuffness-chat", 
+            appId: "1:535702005870:web:4428ac289af051b4a49e7f" 
+        };
+        
+        const app = initializeApp(conf);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.serverTimestamp = serverTimestamp;
+
+        onSnapshot(doc(db, "settings", "announcement"), (docSnap) => {
+            const banner = document.getElementById('announcementBanner');
+            const textSpan = document.getElementById('announcementText');
+            if (docSnap.exists() && docSnap.data().text) {
+                textSpan.innerText = "📢 " + docSnap.data().text;
+                banner.classList.add('active');
+            } else {
+                banner.classList.remove('active');
+            }
+        });
+    </script>
 
     <script>
         let zIdx = 1000;
@@ -400,7 +409,6 @@
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
-
 
             if (isTaskbarUnlocked) {
                 const tb = document.getElementById('taskbar');
@@ -519,7 +527,6 @@
             let temp = buffer1; buffer1 = buffer2; buffer2 = temp;
         }
 
-
         const warpCanvas = document.getElementById('warpCanvas');
         const wCtx = warpCanvas.getContext('2d', { alpha: false, desynchronized: true });
         let wWidth, wHeight, wSize;
@@ -605,7 +612,6 @@
             wCtx.putImageData(outputData, 0, 0);
         }
 
-
         function updateSystemTimeMetrics() {
             const now = new Date();
             let hours = now.getHours();
@@ -678,33 +684,33 @@
             requestAnimationFrame(animateOS);
         }
 
-function initBatteryMonitor() {
-        if ('getBattery' in navigator) {
-            navigator.getBattery().then(function(battery) {
-                function updateBatteryStatus() {
-                    const level = Math.round(battery.level * 100);
-                    document.getElementById('battery-display').innerText = level + '%';
-                    
-                    let icon = '🔋';
-                    if (battery.charging) {
-                        icon = '⚡';
-                    } else if (level <= 20) {
-                        icon = '🪫';
+        function initBatteryMonitor() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(battery) {
+                    function updateBatteryStatus() {
+                        const level = Math.round(battery.level * 100);
+                        document.getElementById('battery-display').innerText = level + '%';
+                        
+                        let icon = '🔋';
+                        if (battery.charging) {
+                            icon = '⚡';
+                        } else if (level <= 20) {
+                            icon = '🪫';
+                        }
+                        
+                        document.getElementById('battery-icon').innerText = icon;
                     }
                     
-                    document.getElementById('battery-icon').innerText = icon;
-                }
-                
-                // Set initial status and listen for changes
-                updateBatteryStatus();
-                battery.addEventListener('levelchange', updateBatteryStatus);
-                battery.addEventListener('chargingchange', updateBatteryStatus);
-            });
-        } else {
-            document.getElementById('battery-display').innerText = 'N/A';
+                    // Set initial status and listen for changes
+                    updateBatteryStatus();
+                    battery.addEventListener('levelchange', updateBatteryStatus);
+                    battery.addEventListener('chargingchange', updateBatteryStatus);
+                });
+            } else {
+                document.getElementById('battery-display').innerText = 'N/A';
+            }
         }
-    }
-        
+
         function initOS() {
             initPoolEngine();
             initWarpEngine();
@@ -722,6 +728,9 @@ function initBatteryMonitor() {
 
             updateSystemTimeMetrics();
             setInterval(updateSystemTimeMetrics, 1000);
+
+            // Initialize the battery monitor here
+            initBatteryMonitor();
 
             requestAnimationFrame(animateOS);
         }
@@ -773,7 +782,7 @@ function initBatteryMonitor() {
 
                 generateDesktopEnvironment();
                 unlockOS();
- } else if (inputVal === 'WINKYGAMER098') {
+            } else if (inputVal === 'WINKYGAMER098') {
                 isDev = true;
                 activeUserKey = 'winkygamer098';
                 if(userDisplay) userDisplay.innerText = 'WINKYGAMER098';
