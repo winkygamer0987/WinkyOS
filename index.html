@@ -6,6 +6,20 @@
     <title>W&CO | WINKY_OS v1.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+
+.battery-widget {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .battery-widget:hover {
+            transform: translateY(-12px) scale(1.15);
+            background: rgba(255,255,255,0.15); 
+            border-color: var(--accent);
+        }
+        
         :root {
             --accent: #00d2ff;
             --accent-glow: rgba(0, 210, 255, 0.4);
@@ -352,6 +366,28 @@
         </div>
     </div>
 
+<div id="taskbar">
+
+        <div class="weather-widget" title="Current Local Conditions" style="cursor: pointer;" onclick="spawnProxy('weather', 'https://merrysky.net/forecast/Downingtown,%20Chester%20County,%20Pennsylvania,%2019335,%20United%20States/si');">
+            <span style="font-size: 1rem; margin-top: 2px; cursor: pointer;">☁️</span>
+            <span id="temp-display" style="font-size: 0.65rem; font-weight: bold; cursor: pointer;">72°</span>
+        </div>
+
+        <div class="battery-widget" title="System Battery">
+            <span id="battery-icon" style="font-size: 1rem; margin-top: 2px;">🔋</span>
+            <span id="battery-display" style="font-size: 0.65rem; font-weight: bold;">--%</span>
+        </div>
+
+        <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+        <div id="dock-apps" style="display: flex; gap: 12px;"></div>
+        <div style="width: 1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+
+        <div class="profile-trigger">
+            <div class="pfp-circle" id="pfp-accent" onclick="triggerPfpUpload()"></div>
+            <input type="file" id="pfp-file-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
+        </div>
+    </div>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getFirestore, onSnapshot, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
@@ -379,6 +415,34 @@
             } else {
                 banner.classList.remove('active');
             }
+
+function initBatteryMonitor() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(battery) {
+                    function updateBatteryStatus() {
+                        const level = Math.round(battery.level * 100);
+                        document.getElementById('battery-display').innerText = level + '%';
+                        
+                        let icon = '🔋';
+                        if (battery.charging) {
+                            icon = '⚡';
+                        } else if (level <= 20) {
+                            icon = '🪫';
+                        }
+                        
+                        document.getElementById('battery-icon').innerText = icon;
+                    }
+                    
+                    // Set initial status and listen for changes
+                    updateBatteryStatus();
+                    battery.addEventListener('levelchange', updateBatteryStatus);
+                    battery.addEventListener('chargingchange', updateBatteryStatus);
+                });
+            } else {
+                document.getElementById('battery-display').innerText = 'N/A';
+            }
+        }
+            
         });
     </script>
 
