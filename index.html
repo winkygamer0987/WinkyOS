@@ -387,64 +387,6 @@
             <input type="file" id="pfp-file-input" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
         </div>
     </div>
-    
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, onSnapshot, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
-        const conf = { 
-            apiKey: "AIzaSyBeAFKSgGuMVzZn4i59Bs_0rnQT_TsmnY4", 
-            projectId: "teddy-bear-tuffness-chat", 
-            appId: "1:535702005870:web:4428ac289af051b4a49e7f" 
-        };
-        
-        const app = initializeApp(conf);
-        const db = getFirestore(app);
-
-        window.db = db;
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.serverTimestamp = serverTimestamp;
-
-        onSnapshot(doc(db, "settings", "announcement"), (docSnap) => {
-            const banner = document.getElementById('announcementBanner');
-            const textSpan = document.getElementById('announcementText');
-            if (docSnap.exists() && docSnap.data().text) {
-                textSpan.innerText = "📢 " + docSnap.data().text;
-                banner.classList.add('active');
-            } else {
-                banner.classList.remove('active');
-            }
-
-function initBatteryMonitor() {
-            if ('getBattery' in navigator) {
-                navigator.getBattery().then(function(battery) {
-                    function updateBatteryStatus() {
-                        const level = Math.round(battery.level * 100);
-                        document.getElementById('battery-display').innerText = level + '%';
-                        
-                        let icon = '🔋';
-                        if (battery.charging) {
-                            icon = '⚡';
-                        } else if (level <= 20) {
-                            icon = '🪫';
-                        }
-                        
-                        document.getElementById('battery-icon').innerText = icon;
-                    }
-                    
-                    // Set initial status and listen for changes
-                    updateBatteryStatus();
-                    battery.addEventListener('levelchange', updateBatteryStatus);
-                    battery.addEventListener('chargingchange', updateBatteryStatus);
-                });
-            } else {
-                document.getElementById('battery-display').innerText = 'N/A';
-            }
-        }
-            
-        });
-    </script>
 
     <script>
         let zIdx = 1000;
@@ -736,6 +678,33 @@ function initBatteryMonitor() {
             requestAnimationFrame(animateOS);
         }
 
+function initBatteryMonitor() {
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                function updateBatteryStatus() {
+                    const level = Math.round(battery.level * 100);
+                    document.getElementById('battery-display').innerText = level + '%';
+                    
+                    let icon = '🔋';
+                    if (battery.charging) {
+                        icon = '⚡';
+                    } else if (level <= 20) {
+                        icon = '🪫';
+                    }
+                    
+                    document.getElementById('battery-icon').innerText = icon;
+                }
+                
+                // Set initial status and listen for changes
+                updateBatteryStatus();
+                battery.addEventListener('levelchange', updateBatteryStatus);
+                battery.addEventListener('chargingchange', updateBatteryStatus);
+            });
+        } else {
+            document.getElementById('battery-display').innerText = 'N/A';
+        }
+    }
+        
         function initOS() {
             initPoolEngine();
             initWarpEngine();
