@@ -405,11 +405,7 @@
         let timeFormat = '24h';
         let isTaskbarUnlocked = false; 
 
-        let mouse = { x: -2000, y: -2000 };
         window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-
             if (isTaskbarUnlocked) {
                 const tb = document.getElementById('taskbar');
                 if (e.clientY > window.innerHeight - 80) {
@@ -428,7 +424,7 @@
             'winky_is_tuff': "https://kommodo.ai/i/MRpTI5hsM8QlHAM6ZYBJ"
         };
 
-            const APP_REGISTRY = [
+        const APP_REGISTRY = [
             { type: 'core', name: 'credits', label: 'Credits', icon: '🎬' },
             { type: 'core', name: 'games', label: 'Games', icon: '🎮' },
             { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false },
@@ -562,16 +558,16 @@
 
         function runWarpPhysics() {
             const centerX = wWidth / 2; const centerY = wHeight / 2;
-            const isInside = Math.abs(mouse.x - centerX) < boxWidth / 2 && Math.abs(mouse.y - centerY) < boxHeight / 2;
+            const isInside = Math.abs(window.mouseX - centerX) < boxWidth / 2 && Math.abs(window.mouseY - centerY) < boxHeight / 2;
             
-            if (holePos.x < -1000 && mouse.x > -1000) { holePos.x = mouse.x; holePos.y = mouse.y; }
+            if (holePos.x < -1000 && window.mouseX > -1000) { holePos.x = window.mouseX; holePos.y = window.mouseY; }
 
             const targetInflation = isInside ? 1 : 0;
             currentInflation += (targetInflation - currentInflation) * (isInside ? 0.08 : 0.15);
 
             const followSpeed = isInside ? 0.12 : (currentInflation > 0.01 ? 0.25 : 1.0);
-            holePos.x += (mouse.x - holePos.x) * followSpeed;
-            holePos.y += (mouse.y - holePos.y) * followSpeed;
+            holePos.x += (window.mouseX - holePos.x) * followSpeed;
+            holePos.y += (window.mouseY - holePos.y) * followSpeed;
 
             if (currentInflation < 0.0001 && !isInside) {
                 wCtx.drawImage(wTextCanvas, 0, 0);
@@ -637,7 +633,7 @@
             
             const timeString = timeFormat === '12h' 
                 ? `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`
-                : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0 Manoj')}`;
             
             document.getElementById('chrono-time-display').innerText = timeString;
             
@@ -701,7 +697,6 @@
                         document.getElementById('battery-icon').innerText = icon;
                     }
                     
-                    // Set initial status and listen for changes
                     updateBatteryStatus();
                     battery.addEventListener('levelchange', updateBatteryStatus);
                     battery.addEventListener('chargingchange', updateBatteryStatus);
@@ -729,7 +724,6 @@
             updateSystemTimeMetrics();
             setInterval(updateSystemTimeMetrics, 1000);
 
-            // Initialize the battery monitor here
             initBatteryMonitor();
 
             requestAnimationFrame(animateOS);
@@ -738,6 +732,13 @@
         window.addEventListener('resize', () => {
             initPoolEngine();
             initWarpEngine();
+        });
+
+        window.mouseX = -2000;
+        window.mouseY = -2000;
+        window.addEventListener('mousemove', (e) => {
+            window.mouseX = e.clientX;
+            window.mouseY = e.clientY;
         });
 
         function getDevAvatarUrl(key) {
@@ -980,18 +981,22 @@
                     <button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>
                 `;
                 
-const gamesList = [
-    { name: 'BSS', url: 'https://dddatt.github.io/bss/', img: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c253bd04-f7ef-411e-a2c0-91c17d781d10/derbtnn-ff190dd7-54fa-4098-9469-affb1fbe980a.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9jMjUzYmQwNC1mN2VmLTQxMWUtYTJjMC05MWMxN2Q3ODFkMTAvZGVyYnRubi1mZjE5MGRkNy01NGZhLTQwOTgtOTQ2OS1hZmZiMWZiZTk4MGEucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.fgxMx5uLPheT1MEOoJxM0o88oZXOQw00C5VndjvfkYc' },
-    { name: 'Core Ball', url: 'https://rpc.lol/games/projects/core-ball/index.html', img: 'https://www.cokogames.com/wp-content/uploads/thumbs/custom/C/coreball-150x150.jpg' },
-    { name: 'Eaglercraft 1.20', url: 'https://eaglercraft.dev/clients/EaglyMC%201.20%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
-    { name: 'Eaglercraft 1.8.8', url: 'https://eaglercraft.dev/clients/Release%201.8.8%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
-    { name: 'Drive Mad', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://online.pubhtml5.com/xgyih/accountlogo.png' },
-    { name: 'Deadshot.io', url: 'https://deadshot.io/?trk=public_post-text', img: 'https://cdn-1.webcatalog.io/catalog/deadshot/deadshot-icon-filled-256.webp?v=1739325990294' }
-];
+                const gamesList = [
+                    { name: 'BSS', url: 'https://dddatt.github.io/bss/', img: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c253bd04-f7ef-411e-a2c0-91c17d781d10/derbtnn-ff190dd7-54fa-4098-9469-affb1fbe980a.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9jMjUzYmQwNC1mN2VmLTQxMWUtYTJjMC05MWMxN2Q3ODFkMTAvZGVyYnRubi1mZjE5MGRkNy01NGZhLTQwOTgtOTQ2OS1hZmZiMWZiZTk4MGEucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.fgxMx5uLPheT1MEOoJxM0o88oZXOQw00C5VndjvfkYc' },
+                    { name: 'Core Ball', url: 'https://rpc.lol/games/projects/core-ball/index.html', img: 'https://www.cokogames.com/wp-content/uploads/thumbs/custom/C/coreball-150x150.jpg' },
+                    { name: 'Eaglercraft 1.20', url: 'https://eaglercraft.dev/clients/EaglyMC%201.20%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
+                    { name: 'Eaglercraft 1.8.8', url: 'https://eaglercraft.dev/clients/Release%201.8.8%20JS/index.html', img: 'https://store-images.s-microsoft.com/image/apps.53095.13850085746326678.06e2dc5c-7997-46e9-a8e6-0e48b57cb13b.419e3c9d-9dd3-4a28-a9f3-a12350215871?q=90&w=177&h=265' },
+                    { name: 'Drive Mad', url: 'https://curved-moccasin-rdfdf1xksq.edgeone.app/', img: 'https://online.pubhtml5.com/xgyih/accountlogo.png' },
+                    { name: 'Deadshot.io', url: 'https://deadshot.io/?trk=public_post-text', img: 'https://cdn-1.webcatalog.io/catalog/deadshot/deadshot-icon-filled-256.webp?v=1739325990294' },
+                    { name: 'Idle Ants', url: 'https://www.blipzi.com/idle-ants.html', img: 'https://cdn-icon.bluestacks.com/_VOU6eUqQfaeiXGd7W1g3DyEGb88QdunyLD_L9gx9xx4K93lnv3_X5jqZKLniMLVMsA=w64' },
+                    { name: 'Retro Bowl', url: 'https://q092w14.live.codepad.app/index.html', img: 'https://retrobowl76.io/cache/data/image/game/retrobowl-h200x200.webp' },
+                    { name: '60 Second Burger Run', url: 'https://www.kongregate.com/en/games/gameshot/60-seconds-burger-run', img: 'https://www.coolmathgames.com/sites/default/files/styles/app_icon/public/60-second-burger-run-icon.png?itok=GZexSSM0' },
+                    { name: 'OvO', url: 'https://www.mortgagecalculator.org/money-games/ovo/', img: 'https://static.wikia.nocookie.net/flashgaming/images/6/64/OvO_%28Armor_Games_Menu_Version%29.png/revision/latest?cb=20230729174059' }
+                ];
 
                 let gamesHTML = gamesList.map(g => `
                     <div class="game-card" onclick="spawnProxy('${g.name.replace(/ /g, '_')}', '${g.url}')" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)';" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.3s ease; text-align: center;">
-                        <img src="${g.img}" style="width: 100%; border-radius: 8px; margin-bottom: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05); pointer-events: none;">
+                        <img src="${g.img}" style="width: 100%; height: 120px; border-radius: 8px; margin-bottom: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05); pointer-events: none;">
                         <div style="font-size: 0.8rem; font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent); pointer-events: none;">${g.name}</div>
                     </div>
                 `).join('');
