@@ -174,7 +174,7 @@
             box-shadow: 0 40px 80px rgba(0,0,0,0.7);
             display: none; flex-direction: column; overflow: hidden; z-index: 100; pointer-events: all;
         }
-        .win.maximized { inset: 10px !important; width: calc(100% - 20px) !important; height: calc(100% - 100px) !important; border-radius: 12px; }
+            .win.maximized { inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0; }
 
         .win-bar {
             padding: 15px 20px; background: rgba(255,255,255,0.03);
@@ -1042,10 +1042,7 @@
             ;
             document.body.appendChild(win);
             
-            if (app !== 'games') {
-                win.classList.add('maximized');
-            }
-        }
+           win.classList.add('maximized');
 
         function setAccent(color) {
             document.documentElement.style.setProperty('--accent', color);
