@@ -1042,7 +1042,10 @@
             ;
             document.body.appendChild(win);
             
-           win.classList.add('maximized');
+      if (app !== 'games') {
+                win.classList.add('maximized');
+            }
+        }
 
         function setAccent(color) {
             document.documentElement.style.setProperty('--accent', color);
