@@ -130,41 +130,9 @@
             text-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
 
-        #gatekeeper {
-            position: fixed; inset: 0; background: radial-gradient(circle at center, #0a101a 0%, #000 100%);
-            z-index: 500000; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1s ease;
-        }
-
-        .vault-card {
-            width: 350px; padding: 40px; background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border); border-radius: 30px; backdrop-filter: blur(20px);
-            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            animation: vaultFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes vaultFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        .vault-input {
-            width: 100%; padding: 15px; margin: 20px 0; border-radius: 12px;
-            border: 1px solid var(--border); background: rgba(255,255,255,0.05);
-            color: var(--accent); font-family: 'JetBrains Mono'; text-align: center;
-            outline: none; transition: 0.3s; font-size: 1rem;
-            text-transform: uppercase;
-        }
-        .vault-input::placeholder { text-transform: none; }
-        .vault-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-
-        .vault-btn {
-            width: 100%; padding: 14px; border-radius: 12px;
-            border: none; background: var(--accent); color: #000;
-            font-weight: 700; cursor: pointer; transition: 0.3s; letter-spacing: 1px;
-        }
-        .vault-btn:hover { transform: scale(1.03); box-shadow: 0 0 25px var(--accent-glow); }
-
         #desktop {
-            position: absolute; inset: 0; z-index: 3; opacity: 0; pointer-events: none; transition: 1s;
-            display: none; 
+            position: absolute; inset: 0; z-index: 3; opacity: 1; pointer-events: all;
+            display: block; 
         }
 
         .win {
@@ -333,17 +301,6 @@
         </div>
     </div>
 
-    <div id="gatekeeper">
-        <div style="font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--accent); margin-bottom: 20px; letter-spacing: 4px;">WINKY_V1.1</div>
-        <div class="vault-card">
-            <div style="font-size: 2rem; margin-bottom: 10px;">☄</div>
-            <h2 style="font-size: 1.2rem; font-weight: 300;">IDENTITY REQUIRED</h2>
-            <input type="password" id="pass-input" class="vault-input" placeholder='ENTER "WINKY"' oninput="this.value = this.value.toUpperCase();" onkeydown="if(event.key === 'Enter') { event.preventDefault(); authenticate(); }">
-            <button class="vault-btn" onclick="authenticate()">ENTER SESSION</button>
-            <div id="login-err" style="color: #ff5f56; font-size: 0.7rem; margin-top: 15px; display: none; font-family: 'JetBrains Mono';">KEY_REJECTED_ACCESS_DENIED</div>
-        </div>
-    </div>
-
     <div id="desktop"></div>
 
     <div id="taskbar">
@@ -401,7 +358,7 @@
         let zIdx = 1000;
         let activeEngine = 'pool'; 
         let isDev = false;
-        let activeUserKey = '';
+        let activeUserKey = 'winky_user';
         let timeFormat = '24h';
         let isTaskbarUnlocked = false; 
 
@@ -416,10 +373,6 @@
             }
         });
 
-        const DEV_KEYS = {
-            'OANDB': 'winky_is_tuff'     
-        };
-
         const DEFAULT_PFP = {
             'winky_is_tuff': "https://kommodo.ai/i/MRpTI5hsM8QlHAM6ZYBJ"
         };
@@ -427,6 +380,7 @@
         const APP_REGISTRY = [
             { type: 'proxy', name: 'movies', label: 'Movies', icon: '🎬', url: 'https://late-brown-ksk3hygld6.edgeone.app/', devOnly: false },
             { type: 'proxy', name: 'games', label: 'Games', icon: '🎮', url: 'https://rich-yellow-w6vhttvg1d.edgeone.app/', devOnly: false },
+            { type: 'proxy', name: 'music', label: 'Music', icon: '🎵', url: 'https://linear-pink-6ec0nsx3.edgeone.app/', devOnly: false },
             { type: 'proxy', name: 'search', label: 'Search', icon: '🌐', url: 'https://lmslm4-8080.csb.app/', devOnly: false },
             { type: 'proxy', name: 'winkyai', label: 'Winky AI', icon: '🤖', url: 'https://silky-emerald-59dbu7ifkp.edgeone.app/', devOnly: false },
             { type: 'core', name: 'settings', label: 'Settings', icon: '⚙️' }
@@ -633,7 +587,7 @@
             
             const timeString = timeFormat === '12h' 
                 ? `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`
-                : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0 Manoj')}`;
+                : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
             
             document.getElementById('chrono-time-display').innerText = timeString;
             
@@ -726,6 +680,14 @@
 
             initBatteryMonitor();
 
+            isTaskbarUnlocked = true;
+            generateDesktopEnvironment();
+            document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(0)';
+            
+            setTimeout(() => {
+                document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(120px)';
+            }, 2000);
+
             requestAnimationFrame(animateOS);
         }
 
@@ -769,71 +731,28 @@
             });
         }
 
-        function authenticate() {
-            const rawInput = document.getElementById('pass-input').value;
-            const inputVal = rawInput.toUpperCase().trim();
-            const userDisplay = document.getElementById('user-display');
-            
-            if (DEV_KEYS[inputVal]) {
-                activeUserKey = DEV_KEYS[inputVal]; 
-                isDev = true;
-                if(userDisplay) userDisplay.innerText = activeUserKey;
-                document.getElementById('pfp-accent').style.cursor = 'pointer';
-                document.getElementById('pfp-accent').style.backgroundImage = `url('${getDevAvatarUrl(activeUserKey)}')`;
-
-                generateDesktopEnvironment();
-                unlockOS();
-            } else if (inputVal === 'WINKYGAMER098') {
+        window.verifySettingsAdmin = function() {
+            const inputVal = document.getElementById('settingsAdminInput').value.trim().toUpperCase();
+            if (inputVal === '098' || inputVal === 'WINKYGAMER098') {
                 isDev = true;
                 activeUserKey = 'winkygamer098';
-                if(userDisplay) userDisplay.innerText = 'WINKYGAMER098';
                 document.getElementById('pfp-accent').style.cursor = 'default';
                 document.getElementById('pfp-accent').style.backgroundImage = `none`;
-                
                 generateDesktopEnvironment();
-                unlockOS();
-            } else if (inputVal === 'WINKY') {
-                isDev = false;              
-            
-                let winkyId = sessionStorage.getItem('aura_winky_id');
-                if (!winkyId) {
-                    let nextNum = parseInt(localStorage.getItem('aura_next_winky_num') || '1');
-                    if(nextNum > 13) nextNum = 1; 
-                    winkyId = `winky_${nextNum}`;
-                    sessionStorage.setItem('aura_winky_id', winkyId);
-                    localStorage.setItem('aura_next_winky_num', nextNum + 1);
+                
+                const win = document.getElementById('win-settings');
+                if (win) {
+                    win.remove();
+                    spawn('settings');
                 }
-                
-                activeUserKey = winkyId;
-                if(userDisplay) userDisplay.innerText = winkyId.toUpperCase();
-                document.getElementById('pfp-accent').style.cursor = 'default';
-                document.getElementById('pfp-accent').style.backgroundImage = `none`;
-                
-                generateDesktopEnvironment();
-                unlockOS();
             } else {
-                const err = document.getElementById('login-err');
-                err.style.display = 'block';
-                setTimeout(() => err.style.display = 'none', 2000);
+                const err = document.getElementById('settings-admin-err');
+                if (err) {
+                    err.style.display = 'block';
+                    setTimeout(() => { if (err) err.style.display = 'none'; }, 2000);
+                }
             }
-        }
-
-        function unlockOS() {
-            document.getElementById('gatekeeper').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('gatekeeper').style.display = 'none';
-                document.getElementById('desktop').style.opacity = '1';
-                document.getElementById('desktop').style.pointerEvents = 'all';
-                isTaskbarUnlocked = true;
-
-                document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(0)';
-                
-                setTimeout(() => {
-                    document.getElementById('taskbar').style.transform = 'translateX(-50%) translateY(120px)';
-                }, 2000);
-
-            }, 1000);
-        }
+        };
 
         function triggerPfpUpload() {
             if (isDev) {
@@ -932,7 +851,6 @@
             if (app === 'settings') {
                 ctrlButtons = `<button class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></button>`;
                 
-
                 let adminPanel = '';
                 if (activeUserKey === 'winkygamer098') {
                     adminPanel = `
@@ -943,6 +861,14 @@
                             <button style="flex:3; padding:8px; border-radius:8px; background:var(--accent); border:none; color:#000; font-weight:bold; cursor:pointer;" onclick="sendBroadcast()">Broadcast</button>
                             <button style="flex:1; padding:8px; border-radius:8px; background:#ff5f56; border:none; color:#000; font-weight:bold; cursor:pointer;" onclick="clearBroadcast()">Clear</button>
                         </div>
+                    </div>`;
+                } else {
+                    adminPanel = `
+                    <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px;">
+                        <p style="font-size:0.65rem; opacity:0.5; margin-bottom:8px; letter-spacing:1px; color:var(--accent);">ADMIN CONSOLE LOG-IN</p>
+                        <input type="password" id="settingsAdminInput" placeholder="ENTER ADMIN KEY" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:var(--accent); font-family:'JetBrains Mono'; margin-bottom:8px; text-align:center; outline:none;" onkeydown="if(event.key === 'Enter') { verifySettingsAdmin(); }">
+                        <button style="width:100%; padding:8px; border-radius:8px; background:var(--accent); border:none; color:#000; font-weight:bold; cursor:pointer;" onclick="verifySettingsAdmin()">AUTHENTICATE</button>
+                        <div id="settings-admin-err" style="color: #ff5f56; font-size: 0.65rem; margin-top: 8px; display: none; font-family: 'JetBrains Mono'; text-align:center;">KEY_REJECTED_ACCESS_DENIED</div>
                     </div>`;
                 }
 
@@ -1042,7 +968,7 @@
             ;
             document.body.appendChild(win);
             
-      if (app !== 'games') {
+            if (app !== 'games') {
                 win.classList.add('maximized');
             }
         }
